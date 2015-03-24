@@ -34,7 +34,9 @@ extern "C"
 #include <unistd.h>
 }
 
+#include <fstream>
 #include <iostream>
+#include <set>
 #include <string>
 
 #include "zepeto.h"
@@ -60,6 +62,40 @@ std::string zepeto::product_file(void) const
   return m_product_file;
 }
 
+void zepeto::list_products(void) const
+{
+  std::ifstream file;
+  std::set<std::string> s;
+  std::string line;
+
+  file.open(m_product_file.c_str(), std::ios::in);
+
+  if(file.is_open())
+    while(getline(file, line))
+      {
+	if(line.find("#") == 0)
+	  continue;
+
+	size_t index = line.find(".");
+
+	if(index == std::string::npos)
+	  continue;
+
+	line = line.substr(0, index);
+
+	if(line.empty())
+	  continue;
+
+	if(!s.count(line))
+	  s.insert(line);
+      }
+
+  for(std::set<std::string>::iterator it = s.begin(); it != s.end(); ++it)
+    std::cout << *it << "\n";
+
+  file.close();
+}
+
 void zepeto::print_about(void) const
 {
   std::cout << "zepeto\n"
@@ -71,7 +107,13 @@ void zepeto::print_about(void) const
 void zepeto::print_help(void)
 {
   std::cerr << "zepeto\n"
-	    << "Incorrect usage. Please see the manual.\n";
+	    << "Incorrect usage. Please read the manual.\n";
+}
+
+void zepeto::set_product_file(const char *product_file)
+{
+  if(product_file)
+    m_product_file = product_file;
 }
 
 int main(int argc, char *argv[])
@@ -82,7 +124,6 @@ int main(int argc, char *argv[])
   if(argc <= 1 || !argv)
     {
       rc = EXIT_FAILURE;
-      zepeto::print_help();
       goto done_label;
     }
 
@@ -98,12 +139,24 @@ int main(int argc, char *argv[])
   catch(...)
     {
       rc = EXIT_FAILURE;
-
-      if(z)
-	delete z;
-
       goto done_label;
     }
+
+  for(int i = 0; i < argc; i++)
+    if(argv[i] && strcmp(argv[i], "-t") == 0)
+      {
+	i += 1;
+
+	if(i < argc && argv[i])
+	  z->set_product_file(argv[i]);
+	else
+	  {
+	    rc = EXIT_FAILURE;
+	    goto done_label;
+	  }
+
+	break;
+      }
 
   for(int i = 0; i < argc; i++)
     if(argv[i] && strcmp(argv[i], "-a") == 0)
@@ -111,9 +164,17 @@ int main(int argc, char *argv[])
 	z->print_about();
 	goto done_label;
       }
-
-  delete z;
+    else if(argv[i] && strcmp(argv[i], "-l") == 0)
+      {
+	z->list_products();
+	goto done_label;
+      }
 
  done_label:
+  delete z;
+
+  if(rc != EXIT_SUCCESS)
+    zepeto::print_help();
+
   return rc;
 }
