@@ -1,0 +1,39 @@
+.TH zepeto 1 "March 24, 2015"
+.SH NAME
+zepeto
+.SH SYNOPSIS
+.B zepeto [options]
+.SH DESCRIPTION
+.B zepeto
+is a tool that allows a user to modify a
+shell's environment variables in accordance to defined products.
+.SH OPTIONS
+.IP "-a"
+Display information about zepeto.
+.IP "-d product"
+This option detaches the given product. That is, the environment
+variables of the current shell will not reference the paths defined in the
+zepeto.table file for the given product.
+.IP "-l"
+List all known products stored in zepeto.table.
+.IP "-q"
+Quiet mode. Also, all errors and warnings will be suppressed.
+.IP "-t table"
+Use the table table instead of the official zepeto.table table.
+.IP "-u product"
+This option uses the given product. The current shell's environment variables
+are modified to reference the paths defined in zepeto.table for the given product.
+.SH FILES
+.B /usr/local/bin/zepeto.bash
+.B /usr/local/bin/zepeto.bin
+.B /usr/local/share/zepeto.table
+.SH NOTES
+Zepeto will issue a warning for a product that is not located in the zepeto.table file. It will also issue a warning if a product references a nonexistent path.
+You will need to create a zepeto alias for BASH. Please see the
+ALIAS EXAMPLE(S) section for more information.
+Please note that zepeto will use the /tmp directory if it's unable to locate a user's home directory. Although zepeto uses mkstemp(), the use of /tmp may raise security concerns.
+.SH ALIAS EXAMPLE(S)
+.IP "bash:"
+alias zepeto='. /usr/local/bin/zepeto.bash'
+.SH AUTHOR(S)
+.B Alexis Megas

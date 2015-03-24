@@ -30,6 +30,8 @@ extern "C"
 #include <pwd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
 }
 
 #include <iostream>
@@ -39,31 +41,37 @@ extern "C"
 
 zepeto::zepeto(void)
 {
+  m_product_file = "zepeto.table";
+
+  struct passwd *pw = getpwuid(getuid());
+
+  if(pw)
+    m_tempdir = pw->pw_dir;
+  else
+    m_tempdir = "/tmp";
 }
 
 zepeto::~zepeto()
 {
 }
 
-std::string zepeto::product_file(void)
+std::string zepeto::product_file(void) const
 {
-  return "";
+  return m_product_file;
 }
 
-void zepeto::print_about(void)
+void zepeto::print_about(void) const
 {
-  std::string tempdir;
-  struct passwd *pw = getpwuid(getuid());
-
-  if(pw)
-    tempdir = pw->pw_dir;
-  else
-    tempdir = "/tmp";
-
   std::cout << "zepeto\n"
 	    << "Version: " << ZEPETO_VERSION << ".\n"
 	    << "Product file: " << product_file() << ".\n"
-	    << "Temporary directory: " << tempdir << ".\n";
+	    << "Temporary directory: " << m_tempdir << ".\n";
+}
+
+void zepeto::print_help(void)
+{
+  std::cerr << "zepeto\n"
+	    << "Incorrect usage. Please see the manual.\n";
 }
 
 int main(int argc, char *argv[])
@@ -71,9 +79,29 @@ int main(int argc, char *argv[])
   int rc = EXIT_SUCCESS;
   zepeto *z = 0;
 
-  if(!argv || !z)
+  if(argc <= 1 || !argv)
     {
       rc = EXIT_FAILURE;
+      zepeto::print_help();
+      goto done_label;
+    }
+
+  try
+    {
+      z = new zepeto();
+    }
+  catch(std::bad_alloc &)
+    {
+      rc = EXIT_FAILURE;
+      goto done_label;
+    }
+  catch(...)
+    {
+      rc = EXIT_FAILURE;
+
+      if(z)
+	delete z;
+
       goto done_label;
     }
 
@@ -83,6 +111,8 @@ int main(int argc, char *argv[])
 	z->print_about();
 	goto done_label;
       }
+
+  delete z;
 
  done_label:
   return rc;

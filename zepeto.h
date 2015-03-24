@@ -8,8 +8,13 @@ class zepeto
  public:
   zepeto(void);
   ~zepeto();
-  std::string product_file(void);
-  void print_about(void);
+  static void print_help(void);
+  std::string product_file(void) const;
+  void print_about(void) const;
+
+ private:
+  std::string m_product_file;
+  std::string m_tempdir;
 };
 
 #endif
