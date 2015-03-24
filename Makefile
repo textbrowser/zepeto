@@ -1,6 +1,5 @@
 CXX_OPTIONS = 	-Wall -Wconversion -Werror -Wextra -Wformat=2 \
-		-Wpointer-arith -Wstack-protector \
-		-Wstrict-overflow=5 \
+		-Wpointer-arith -Wstack-protector -Wstrict-overflow=5 \
 		-fPIE -fstack-protector-all -pedantic
 
 SOURCE	= zepeto.cc
