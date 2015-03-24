@@ -27,8 +27,13 @@
 
 extern "C"
 {
+#include <pwd.h>
 #include <stdlib.h>
+#include <string.h>
 }
+
+#include <iostream>
+#include <string>
 
 #include "zepeto.h"
 
@@ -40,19 +45,44 @@ zepeto::~zepeto()
 {
 }
 
+std::string zepeto::product_file(void)
+{
+  return "";
+}
+
+void zepeto::print_about(void)
+{
+  std::string tempdir;
+  struct passwd *pw = getpwuid(getuid());
+
+  if(pw)
+    tempdir = pw->pw_dir;
+  else
+    tempdir = "/tmp";
+
+  std::cout << "zepeto\n"
+	    << "Version: " << ZEPETO_VERSION << ".\n"
+	    << "Product file: " << product_file() << ".\n"
+	    << "Temporary directory: " << tempdir << ".\n";
+}
+
 int main(int argc, char *argv[])
 {
   int rc = EXIT_SUCCESS;
+  zepeto *z = 0;
 
-  if(!argv)
+  if(!argv || !z)
     {
       rc = EXIT_FAILURE;
       goto done_label;
     }
 
   for(int i = 0; i < argc; i++)
-    {
-    }
+    if(argv[i] && strcmp(argv[i], "-a") == 0)
+      {
+	z->print_about();
+	goto done_label;
+      }
 
  done_label:
   return rc;
