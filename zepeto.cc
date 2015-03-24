@@ -44,6 +44,7 @@ extern "C"
 zepeto::zepeto(void)
 {
   m_product_file = "zepeto.table";
+  m_quiet = false;
 
   struct passwd *pw = getpwuid(getuid());
 
@@ -116,6 +117,11 @@ void zepeto::set_product_file(const char *product_file)
     m_product_file = product_file;
 }
 
+void zepeto::set_quiet(const bool quiet)
+{
+  m_quiet = quiet;
+}
+
 int main(int argc, char *argv[])
 {
   int rc = EXIT_SUCCESS;
@@ -142,8 +148,10 @@ int main(int argc, char *argv[])
       goto done_label;
     }
 
-  for(int i = 0; i < argc; i++)
-    if(argv[i] && strcmp(argv[i], "-t") == 0)
+  for(int i = 1; i < argc; i++)
+    if(argv[i] && strcmp(argv[i], "-q") == 0)
+      z->set_quiet(true);
+    else if(argv[i] && strcmp(argv[i], "-t") == 0)
       {
 	i += 1;
 
@@ -158,7 +166,7 @@ int main(int argc, char *argv[])
 	break;
       }
 
-  for(int i = 0; i < argc; i++)
+  for(int i = 1; i < argc; i++)
     if(argv[i] && strcmp(argv[i], "-a") == 0)
       {
 	z->print_about();
@@ -168,6 +176,14 @@ int main(int argc, char *argv[])
       {
 	z->list_products();
 	goto done_label;
+      }
+    else if(argv[i] && strcmp(argv[i], "-q") == 0)
+      {
+      }
+    else
+      {
+	rc = EXIT_FAILURE;
+	break;
       }
 
  done_label:

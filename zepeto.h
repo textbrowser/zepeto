@@ -13,8 +13,10 @@ class zepeto
   void list_products(void) const;
   void print_about(void) const;
   void set_product_file(const char *print_file);
+  void set_quiet(const bool quiet);
 
  private:
+  bool m_quiet;
   std::string m_product_file;
   std::string m_tempdir;
 };
