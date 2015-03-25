@@ -3,30 +3,34 @@
 
 #define ZEPETO_VERSION "1.00"
 
+#include <set>
+#include <string>
+
 class zepeto
 {
  public:
   zepeto(void);
   ~zepeto();
-  static void print_help(void);
-  std::string product_file(void) const;
   void add_attach_product(const char *product);
   void add_detach_product(const char *product);
-  void engage(void) const;
-  void list_products(void) const;
-  void print_about(void) const;
+  void final(void);
+  void print_about(void);
+  void print_help(void);
+  void print_products(void);
   void set_product_file(const char *print_file);
-  void set_quiet(const bool quiet);
 
  private:
-  bool m_quiet;
+  bool m_has_error;
+  char *m_tempfilename;
+  int m_fd;
+  static const int ATTACH = 0;
+  static const int DETACH = 1;
   std::set<std::string> m_attached_products;
   std::set<std::string> m_detached_products;
   std::string m_output;
   std::string m_product_file;
   std::string m_tempdir;
-  void attach_paths(const std::string &paths) const;
-  void detach_paths(const std::string &paths) const;
+  void action(const int a, const std::string &paths);
 };
 
 #endif

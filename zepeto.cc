@@ -30,21 +30,22 @@ extern "C"
 #include <pwd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 }
 
 #include <fstream>
 #include <iostream>
-#include <set>
-#include <string>
+#include <list>
+#include <sstream>
 
 #include "zepeto.h"
 
 zepeto::zepeto(void)
 {
-  m_product_file = "zepeto.table";
-  m_quiet = false;
+  m_has_error = false;
+  m_product_file = "/usr/local/share/zepeto.table";
 
   struct passwd *pw = getpwuid(getuid());
 
@@ -52,15 +53,158 @@ zepeto::zepeto(void)
     m_tempdir = pw->pw_dir;
   else
     m_tempdir = "/tmp";
+
+  std::ostringstream stream;
+
+  stream << m_tempdir
+	 << "/.zepeto.sourceme."
+	 << getuid()
+	 << "."
+	 << getpid()
+	 << "XXXXXX";
+
+  size_t length = stream.str().length() + 1;
+
+  m_tempfilename = new char[length];
+  memset(m_tempfilename, 0, length);
+  strncpy(m_tempfilename, stream.str().c_str(), length - 1);
+
+  if((m_fd = mkstemp(m_tempfilename)) == -1)
+    m_has_error = true;
 }
 
 zepeto::~zepeto()
 {
+  close(m_fd);
+  delete []m_tempfilename;
 }
 
-std::string zepeto::product_file(void) const
+void zepeto::action(const int a, const std::string &string)
 {
-  return m_product_file;
+  if(string.empty())
+    return;
+  else if(string.find(":") == std::string::npos)
+    return;
+
+  std::string paths;
+  std::string variable;
+
+  /*
+  ** VARIABLE:p1:p2:...:pn
+  */
+
+  paths = string.substr(string.find(":") + 1);
+  variable = string.substr(0, string.find(":"));
+
+  if(paths.empty() || variable.empty())
+    return;
+
+  std::set<std::string> set;
+
+  do
+    {
+      size_t index = paths.find(":");
+      std::string p;
+
+      if(index == std::string::npos)
+	p = paths;
+      else
+	p = paths.substr(0, index);
+
+      if(p.empty() || paths.empty())
+	break;
+      else
+	{
+	  if(index == std::string::npos)
+	    paths.clear();
+	  else
+	    paths = paths.substr(index + 1);
+
+	  struct stat sb;
+
+	  if(stat(p.c_str(), &sb) != 0)
+	    {
+	      m_output.append("echo \"The path ");
+	      m_output.append(p);
+	      m_output.append(" is not accessible.\"\n");
+	    }
+	  else if(set.count(p) == 0)
+	    set.insert(p);
+	}
+    }
+  while(true);
+
+  char *temp = getenv(variable.c_str());
+  std::string attached;
+  std::string e;
+
+  if(temp)
+    e = temp;
+
+  for(std::set<std::string>::iterator it = set.begin(); it != set.end();
+      ++it)
+    if(a == ATTACH)
+      {
+	if(e.find(*it) == std::string::npos)
+	  {
+	    attached.append(*it);
+	    attached.append(":");
+	  }
+      }
+    else if(a == DETACH)
+      {
+	size_t index = e.find(*it + ":");
+
+	if(index != std::string::npos)
+	  e.erase(index, (*it).length() + 1);
+	else
+	  {
+	    index = e.find(":" + *it);
+
+	    if(index != std::string::npos)
+	      e.erase(index, (*it).length() + 1);
+	    else
+	      {
+		index = e.find(*it);
+
+		if(index != std::string::npos)
+		  e.erase(index, (*it).length());
+	      }
+	  }
+      }
+
+  if(a == ATTACH)
+    {
+      if(!attached.empty())
+	{
+	  if(e.empty())
+	    attached.erase(attached.length() - 1, 1); // Remove :.
+
+	  m_output.append("export ");
+	  m_output.append(variable);
+	  m_output.append("=");
+	  m_output.append(attached);
+	  m_output.append(e);
+	  m_output.append("\n");
+	}
+    }
+  else if(a == DETACH)
+    {
+      if(e.empty())
+	{
+	  m_output.append("unset ");
+	  m_output.append(variable);
+	  m_output.append("\n");
+	}
+      else
+	{
+	  m_output.append("export ");
+	  m_output.append(variable);
+	  m_output.append("=");
+	  m_output.append(e);
+	  m_output.append("\n");
+	}
+    }
 }
 
 void zepeto::add_attach_product(const char *product)
@@ -79,28 +223,14 @@ void zepeto::add_detach_product(const char *product)
     m_detached_products.insert(product);
 }
 
-void zepeto::attach_paths(const std::string &string) const
+void zepeto::final(void)
 {
-  if(string.empty())
-    return;
-  else if(string.find(":") == std::string::npos)
-    return;
+  if(m_has_error)
+    {
+      print_help();
+      return;
+    }
 
-  std::string paths;
-  std::string variable;
-
-  paths = string.substr(string.find(":") + 1);
-  variable = string.substr(0, string.find(":"));
-}
-
-void zepeto::detach_paths(const std::string &string) const
-{
-  if(string.empty())
-    return;
-}
-
-void zepeto::engage(void) const
-{
   std::ifstream file;
   std::string line;
 
@@ -128,26 +258,75 @@ void zepeto::engage(void) const
 	  continue;
 
 	if(m_attached_products.count(line) > 0)
-	  attach_paths(path);
+	  action(ATTACH, path);
 
 	if(m_detached_products.count(line) > 0)
-	  detach_paths(path);
+	  action(DETACH, path);
       }
 
   file.close();
+
+  if(m_fd != -1)
+    if(!m_output.empty())
+      {
+	write(m_fd, m_output.c_str(), m_output.length());
+	fsync(m_fd);
+      }
+
+  std::cout << m_tempfilename;
 }
 
-void zepeto::list_products(void) const
+void zepeto::print_about(void)
 {
+  m_output.clear();
+  m_output.append("echo \"zepeto\"\n");
+  m_output.append("echo \"Version: ");
+  m_output.append(ZEPETO_VERSION);
+  m_output.append(".\"\n");
+  m_output.append("echo \"Product file: ");
+  m_output.append(m_product_file);
+  m_output.append(".\"\n");
+  m_output.append("echo \"Temporary directory: ");
+  m_output.append(m_tempdir);
+  m_output.append(".\"\n");
+
+  if(m_fd != -1)
+    {
+      write(m_fd, m_output.c_str(), m_output.length());
+      fsync(m_fd);
+    }
+
+  std::cout << m_tempfilename;
+}
+
+void zepeto::print_help(void)
+{
+  m_output.clear();
+  m_output.append("echo \"zepeto\"\n");
+  m_output.append("echo \"Incorrect usage. Please read the manual.\"\n");
+
+  if(m_fd != -1)
+    {
+      write(m_fd, m_output.c_str(), m_output.length());
+      fsync(m_fd);
+    }
+
+  std::cout << m_tempfilename;
+}
+
+void zepeto::print_products(void)
+{
+  char buffer[1024];
   std::ifstream file;
-  std::set<std::string> s;
-  std::string line;
+  std::set<std::string> set;
 
   file.open(m_product_file.c_str(), std::ios::in);
 
   if(file.is_open())
-    while(getline(file, line))
+    while(file.getline(buffer, 1024))
       {
+	std::string line(buffer);
+
 	if(line.find("#") == 0)
 	  continue;
 
@@ -161,28 +340,29 @@ void zepeto::list_products(void) const
 	if(line.empty())
 	  continue;
 
-	if(!s.count(line))
-	  s.insert(line);
+	if(set.count(line) == 0)
+	  set.insert(line);
       }
 
-  for(std::set<std::string>::iterator it = s.begin(); it != s.end(); ++it)
-    std::cout << *it << "\n";
-
   file.close();
-}
+  m_output.clear();
 
-void zepeto::print_about(void) const
-{
-  std::cout << "zepeto\n"
-	    << "Version: " << ZEPETO_VERSION << ".\n"
-	    << "Product file: " << product_file() << ".\n"
-	    << "Temporary directory: " << m_tempdir << ".\n";
-}
+  for(std::set<std::string>::iterator it = set.begin(); it != set.end();
+      ++it)
+    {
+      m_output.append("echo \"");
+      m_output.append(*it);
+      m_output.append("\"\n");
+    }
 
-void zepeto::print_help(void)
-{
-  std::cerr << "zepeto\n"
-	    << "Incorrect usage. Please read the manual.\n";
+  if(m_fd != -1)
+    if(!m_output.empty())
+      {
+	write(m_fd, m_output.c_str(), m_output.length());
+	fsync(m_fd);
+      }
+
+  std::cout << m_tempfilename;
 }
 
 void zepeto::set_product_file(const char *product_file)
@@ -191,106 +371,3 @@ void zepeto::set_product_file(const char *product_file)
     m_product_file = product_file;
 }
 
-void zepeto::set_quiet(const bool quiet)
-{
-  m_quiet = quiet;
-}
-
-int main(int argc, char *argv[])
-{
-  int rc = EXIT_SUCCESS;
-  zepeto *z = 0;
-
-  if(argc <= 1 || !argv)
-    {
-      rc = EXIT_FAILURE;
-      goto done_label;
-    }
-
-  try
-    {
-      z = new zepeto();
-    }
-  catch(std::bad_alloc &)
-    {
-      rc = EXIT_FAILURE;
-      goto done_label;
-    }
-  catch(...)
-    {
-      rc = EXIT_FAILURE;
-      goto done_label;
-    }
-
-  for(int i = 1; i < argc; i++)
-    if(argv[i] && strcmp(argv[i], "-q") == 0)
-      z->set_quiet(true);
-    else if(argv[i] && strcmp(argv[i], "-t") == 0)
-      {
-	i += 1;
-
-	if(i < argc && argv[i])
-	  z->set_product_file(argv[i]);
-	else
-	  {
-	    rc = EXIT_FAILURE;
-	    goto done_label;
-	  }
-
-	break;
-      }
-
-  for(int i = 1; i < argc; i++)
-    if(argv[i] && strcmp(argv[i], "-a") == 0)
-      {
-	i += 1;
-
-	if(i < argc && argv[i])
-	  z->add_attach_product(argv[i]);
-	else
-	  {
-	    rc = EXIT_FAILURE;
-	    goto done_label;
-	  }
-      }
-    else if(argv[i] && strcmp(argv[i], "-d") == 0)
-      {
-	i += 1;
-
-	if(i < argc && argv[i])
-	  z->add_detach_product(argv[i]);
-	else
-	  {
-	    rc = EXIT_FAILURE;
-	    goto done_label;
-	  }
-      }
-    else if(argv[i] && strcmp(argv[i], "-i") == 0)
-      {
-	z->print_about();
-	goto done_label;
-      }
-    else if(argv[i] && strcmp(argv[i], "-l") == 0)
-      {
-	z->list_products();
-	goto done_label;
-      }
-    else if(argv[i] && strcmp(argv[i], "-q") == 0)
-      {
-      }
-    else
-      {
-	rc = EXIT_FAILURE;
-	break;
-      }
-
-  z->engage();
-
- done_label:
-  delete z;
-
-  if(rc != EXIT_SUCCESS)
-    zepeto::print_help();
-
-  return rc;
-}
