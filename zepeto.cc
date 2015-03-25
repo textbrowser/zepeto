@@ -63,6 +63,14 @@ std::string zepeto::product_file(void) const
   return m_product_file;
 }
 
+void zepeto::add_attach_product(const char *product)
+{
+  if(!product || strlen(product) == 0)
+    return;
+  else if(m_attached_products.count(product) == 0)
+    m_attached_products.insert(product);
+}
+
 void zepeto::add_detach_product(const char *product)
 {
   if(!product || strlen(product) == 0)
@@ -71,12 +79,24 @@ void zepeto::add_detach_product(const char *product)
     m_detached_products.insert(product);
 }
 
-void zepeto::add_use_product(const char *product)
+void zepeto::attach_paths(const std::string &string) const
 {
-  if(!product || strlen(product) == 0)
+  if(string.empty())
     return;
-  else if(m_used_products.count(product) == 0)
-    m_used_products.insert(product);
+  else if(string.find(":") == std::string::npos)
+    return;
+
+  std::string paths;
+  std::string variable;
+
+  paths = string.substr(string.find(":") + 1);
+  variable = string.substr(0, string.find(":"));
+}
+
+void zepeto::detach_paths(const std::string &string) const
+{
+  if(string.empty())
+    return;
 }
 
 void zepeto::engage(void) const
@@ -99,14 +119,19 @@ void zepeto::engage(void) const
 	if(index == std::string::npos)
 	  continue;
 
+	std::string path;
+
+	path = line.substr(index + 1);
 	line = line.substr(0, index);
 
 	if(line.empty())
 	  continue;
 
+	if(m_attached_products.count(line) > 0)
+	  attach_paths(path);
+
 	if(m_detached_products.count(line) > 0)
-	  {
-	  }
+	  detach_paths(path);
       }
 
   file.close();
@@ -218,8 +243,15 @@ int main(int argc, char *argv[])
   for(int i = 1; i < argc; i++)
     if(argv[i] && strcmp(argv[i], "-a") == 0)
       {
-	z->print_about();
-	goto done_label;
+	i += 1;
+
+	if(i < argc && argv[i])
+	  z->add_attach_product(argv[i]);
+	else
+	  {
+	    rc = EXIT_FAILURE;
+	    goto done_label;
+	  }
       }
     else if(argv[i] && strcmp(argv[i], "-d") == 0)
       {
@@ -233,6 +265,11 @@ int main(int argc, char *argv[])
 	    goto done_label;
 	  }
       }
+    else if(argv[i] && strcmp(argv[i], "-i") == 0)
+      {
+	z->print_about();
+	goto done_label;
+      }
     else if(argv[i] && strcmp(argv[i], "-l") == 0)
       {
 	z->list_products();
@@ -240,18 +277,6 @@ int main(int argc, char *argv[])
       }
     else if(argv[i] && strcmp(argv[i], "-q") == 0)
       {
-      }
-    else if(argv[i] && strcmp(argv[i], "-u") == 0)
-      {
-	i += 1;
-
-	if(i < argc && argv[i])
-	  z->add_use_product(argv[i]);
-	else
-	  {
-	    rc = EXIT_FAILURE;
-	    goto done_label;
-	  }
       }
     else
       {
