@@ -63,6 +63,55 @@ std::string zepeto::product_file(void) const
   return m_product_file;
 }
 
+void zepeto::add_detach_product(const char *product)
+{
+  if(!product || strlen(product) == 0)
+    return;
+  else if(m_detached_products.count(product) == 0)
+    m_detached_products.insert(product);
+}
+
+void zepeto::add_use_product(const char *product)
+{
+  if(!product || strlen(product) == 0)
+    return;
+  else if(m_used_products.count(product) == 0)
+    m_used_products.insert(product);
+}
+
+void zepeto::engage(void) const
+{
+  std::ifstream file;
+  std::string line;
+
+  file.open(m_product_file.c_str(), std::ios::in);
+
+  if(file.is_open())
+    while(getline(file, line))
+      {
+	if(line.find("#") == 0)
+	  continue;
+	else if(line.find("description") != std::string::npos)
+	  continue;
+
+	size_t index = line.find(".");
+
+	if(index == std::string::npos)
+	  continue;
+
+	line = line.substr(0, index);
+
+	if(line.empty())
+	  continue;
+
+	if(m_detached_products.count(line) > 0)
+	  {
+	  }
+      }
+
+  file.close();
+}
+
 void zepeto::list_products(void) const
 {
   std::ifstream file;
@@ -172,6 +221,18 @@ int main(int argc, char *argv[])
 	z->print_about();
 	goto done_label;
       }
+    else if(argv[i] && strcmp(argv[i], "-d") == 0)
+      {
+	i += 1;
+
+	if(i < argc && argv[i])
+	  z->add_detach_product(argv[i]);
+	else
+	  {
+	    rc = EXIT_FAILURE;
+	    goto done_label;
+	  }
+      }
     else if(argv[i] && strcmp(argv[i], "-l") == 0)
       {
 	z->list_products();
@@ -180,11 +241,25 @@ int main(int argc, char *argv[])
     else if(argv[i] && strcmp(argv[i], "-q") == 0)
       {
       }
+    else if(argv[i] && strcmp(argv[i], "-u") == 0)
+      {
+	i += 1;
+
+	if(i < argc && argv[i])
+	  z->add_use_product(argv[i]);
+	else
+	  {
+	    rc = EXIT_FAILURE;
+	    goto done_label;
+	  }
+      }
     else
       {
 	rc = EXIT_FAILURE;
 	break;
       }
+
+  z->engage();
 
  done_label:
   delete z;
