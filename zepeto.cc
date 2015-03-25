@@ -370,4 +370,3 @@ void zepeto::set_product_file(const char *product_file)
   if(product_file)
     m_product_file = product_file;
 }
-
