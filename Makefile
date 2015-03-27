@@ -1,4 +1,5 @@
 CXX_OPTIONS = 	-Wall -Wconversion -Werror -Wextra -Wformat=2 \
+		-Wformat-security \
 		-Wpointer-arith -Wstack-protector -Wstrict-overflow=5 \
 		-fPIE -fstack-protector-all -pedantic
 
