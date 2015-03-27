@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
     {
       z = new zepeto();
     }
-  catch(std::bad_alloc &)
+  catch(std::bad_alloc &exception)
     {
       rc = EXIT_FAILURE;
       return rc;
@@ -56,74 +56,90 @@ int main(int argc, char *argv[])
       goto done_label;
     }
 
-  for(int i = 1; i < argc; i++)
-    if(argv[i] && strcmp(argv[i], "-t") == 0)
-      {
-	i += 1;
+  try
+    {
+      for(int i = 1; i < argc; i++)
+	if(argv[i] && strcmp(argv[i], "-t") == 0)
+	  {
+	    i += 1;
 
-	if(i < argc && argv[i])
-	  z->set_product_file(argv[i]);
+	    if(i < argc && argv[i])
+	      z->set_product_file(argv[i]);
+	    else
+	      {
+		rc = EXIT_FAILURE;
+		goto done_label;
+	      }
+
+	    break;
+	  }
+
+      for(int i = 1; i < argc; i++)
+	if(argv[i] && strcmp(argv[i], "-a") == 0)
+	  {
+	    i += 1;
+
+	    if(i < argc && argv[i])
+	      z->add_attach_product(argv[i]);
+	    else
+	      {
+		rc = EXIT_FAILURE;
+		goto done_label;
+	      }
+	  }
+	else if(argv[i] && strcmp(argv[i], "-d") == 0)
+	  {
+	    i += 1;
+
+	    if(i < argc && argv[i])
+	      z->add_detach_product(argv[i]);
+	    else
+	      {
+		rc = EXIT_FAILURE;
+		goto done_label;
+	      }
+	  }
+	else if(argv[i] && strcmp(argv[i], "-i") == 0)
+	  {
+	    z->print_about();
+	    goto done_label;
+	  }
+	else if(argv[i] && strcmp(argv[i], "-l") == 0)
+	  {
+	    z->print_products();
+	    goto done_label;
+	  }
+	else if(argv[i] && strcmp(argv[i], "-t") == 0)
+	  i += 1;
 	else
 	  {
 	    rc = EXIT_FAILURE;
 	    goto done_label;
 	  }
 
-	break;
-      }
-
-  for(int i = 1; i < argc; i++)
-    if(argv[i] && strcmp(argv[i], "-a") == 0)
-      {
-	i += 1;
-
-	if(i < argc && argv[i])
-	  z->add_attach_product(argv[i]);
-	else
-	  {
-	    rc = EXIT_FAILURE;
-	    goto done_label;
-	  }
-      }
-    else if(argv[i] && strcmp(argv[i], "-d") == 0)
-      {
-	i += 1;
-
-	if(i < argc && argv[i])
-	  z->add_detach_product(argv[i]);
-	else
-	  {
-	    rc = EXIT_FAILURE;
-	    goto done_label;
-	  }
-      }
-    else if(argv[i] && strcmp(argv[i], "-i") == 0)
-      {
-	z->print_about();
-	goto done_label;
-      }
-    else if(argv[i] && strcmp(argv[i], "-l") == 0)
-      {
-	z->print_products();
-	goto done_label;
-      }
-    else if(argv[i] && strcmp(argv[i], "-t") == 0)
-      {
-	i += 1;
-      }
-    else
-      {
-	rc = EXIT_FAILURE;
-	goto done_label;
-      }
-
-  z->final();
+      z->final();
+    }
+  catch(std::bad_alloc &exception)
+    {
+    }
+  catch(...)
+    {
+    }
 
  done_label:
-
-  if(rc != EXIT_SUCCESS)
-    if(z)
-      z->print_help();
+  try
+    {
+      if(z)
+	if(z->has_error())
+	  {
+	    rc = EXIT_FAILURE;
+	    z->print_error();
+	  }
+    }
+  catch(...)
+    {
+      rc = EXIT_FAILURE;
+    }
 
   delete z;
   return rc;

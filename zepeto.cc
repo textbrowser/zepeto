@@ -39,13 +39,15 @@ extern "C"
 #include <iostream>
 #include <list>
 #include <sstream>
+#include <stdexcept>
 
 #include "zepeto.h"
 
 zepeto::zepeto(void)
 {
-  m_has_error = false;
+  m_buffer = new char[1024];
   m_product_file = "/usr/local/share/zepeto.table";
+  m_tempfilename = 0;
 
   struct passwd *pw = getpwuid(getuid());
 
@@ -70,303 +72,415 @@ zepeto::zepeto(void)
   strncpy(m_tempfilename, stream.str().c_str(), length - 1);
 
   if((m_fd = mkstemp(m_tempfilename)) == -1)
-    m_has_error = true;
+    {
+      m_error.append("echo \"mkstemp() failure.\"\n");
+      throw std::runtime_error(m_error);
+    }
 }
 
 zepeto::~zepeto()
 {
   close(m_fd);
+  delete []m_buffer;
   delete []m_tempfilename;
+}
+
+bool zepeto::has_error(void) const
+{
+  return !m_error.empty();
 }
 
 void zepeto::action(const int a, const std::string &string)
 {
-  if(string.empty())
-    return;
-  else if(string.find(":") == std::string::npos)
-    return;
-
-  std::string paths;
-  std::string variable;
-
-  /*
-  ** VARIABLE:p1:p2:...:pn
-  */
-
-  paths = string.substr(string.find(":") + 1);
-  variable = string.substr(0, string.find(":"));
-
-  if(paths.empty() || variable.empty())
-    return;
-
-  std::set<std::string> set;
-
-  do
+  try
     {
-      size_t index = paths.find(":");
-      std::string p;
+      if(string.empty())
+	return;
+      else if(string.find(":") == std::string::npos)
+	return;
 
-      if(index == std::string::npos)
-	p = paths;
-      else
-	p = paths.substr(0, index);
+      std::string paths;
+      std::string variable;
 
-      if(p.empty() || paths.empty())
-	break;
-      else
+      /*
+      ** VARIABLE:p1:p2:...:pn
+      */
+
+      paths = string.substr(string.find(":") + 1);
+      variable = string.substr(0, string.find(":"));
+
+      if(paths.empty() || variable.empty())
+	return;
+
+      std::set<std::string> set;
+
+      do
 	{
+	  size_t index = paths.find(":");
+	  std::string p;
+
 	  if(index == std::string::npos)
-	    paths.clear();
+	    p = paths;
 	  else
-	    paths = paths.substr(index + 1);
+	    p = paths.substr(0, index);
 
-	  struct stat sb;
-
-	  if(stat(p.c_str(), &sb) != 0)
+	  if(p.empty() || paths.empty())
+	    break;
+	  else
 	    {
-	      m_output.append("echo \"The path ");
-	      m_output.append(p);
-	      m_output.append(" is not accessible.\"\n");
+	      if(index == std::string::npos)
+		paths.clear();
+	      else
+		paths = paths.substr(index + 1);
+
+	      struct stat sb;
+
+	      if(stat(p.c_str(), &sb) != 0)
+		{
+		  m_output.append("echo \"The path ");
+		  m_output.append(p);
+		  m_output.append(" is not accessible.\"\n");
+		}
+	      else if(set.count(p) == 0)
+		set.insert(p);
 	    }
-	  else if(set.count(p) == 0)
-	    set.insert(p);
 	}
-    }
-  while(true);
+      while(true);
 
-  char *temp = getenv(variable.c_str());
-  std::string attached;
-  std::string e;
+      char *temp = getenv(variable.c_str());
+      std::string attached;
+      std::string e;
 
-  if(temp)
-    e = temp;
+      if(temp)
+	e = temp;
 
-  for(std::set<std::string>::iterator it = set.begin(); it != set.end();
-      ++it)
-    if(a == ATTACH)
-      {
-	if(e.find(*it) == std::string::npos)
+      for(std::set<std::string>::iterator it = set.begin(); it != set.end();
+	  ++it)
+	if(a == ATTACH)
 	  {
-	    attached.append(*it);
-	    attached.append(":");
+	    if(e.find(*it) == std::string::npos)
+	      {
+		attached.append(*it);
+		attached.append(":");
+	      }
 	  }
-      }
-    else if(a == DETACH)
-      {
-	size_t index = e.find(*it + ":");
-
-	if(index != std::string::npos)
-	  e.erase(index, (*it).length() + 1);
-	else
+	else if(a == DETACH)
 	  {
-	    index = e.find(":" + *it);
+	    size_t index = e.find(*it + ":");
 
 	    if(index != std::string::npos)
 	      e.erase(index, (*it).length() + 1);
 	    else
 	      {
-		index = e.find(*it);
+		index = e.find(":" + *it);
 
 		if(index != std::string::npos)
-		  e.erase(index, (*it).length());
+		  e.erase(index, (*it).length() + 1);
+		else
+		  {
+		    index = e.find(*it);
+
+		    if(index != std::string::npos)
+		      e.erase(index, (*it).length());
+		  }
 	      }
 	  }
-      }
 
-  if(a == ATTACH)
-    {
-      if(!attached.empty())
+      if(a == ATTACH)
+	{
+	  if(!attached.empty())
+	    {
+	      if(e.empty())
+		attached.erase(attached.length() - 1, 1); // Remove :.
+
+	      m_output.append("export ");
+	      m_output.append(variable);
+	      m_output.append("=");
+	      m_output.append(attached);
+	      m_output.append(e);
+	      m_output.append("\n");
+	    }
+	}
+      else if(a == DETACH)
 	{
 	  if(e.empty())
-	    attached.erase(attached.length() - 1, 1); // Remove :.
-
-	  m_output.append("export ");
-	  m_output.append(variable);
-	  m_output.append("=");
-	  m_output.append(attached);
-	  m_output.append(e);
-	  m_output.append("\n");
+	    {
+	      m_output.append("unset ");
+	      m_output.append(variable);
+	      m_output.append("\n");
+	    }
+	  else
+	    {
+	      m_output.append("export ");
+	      m_output.append(variable);
+	      m_output.append("=");
+	      m_output.append(e);
+	      m_output.append("\n");
+	    }
 	}
     }
-  else if(a == DETACH)
+  catch(std::bad_alloc &exception)
     {
-      if(e.empty())
-	{
-	  m_output.append("unset ");
-	  m_output.append(variable);
-	  m_output.append("\n");
-	}
-      else
-	{
-	  m_output.append("export ");
-	  m_output.append(variable);
-	  m_output.append("=");
-	  m_output.append(e);
-	  m_output.append("\n");
-	}
+      throw exception;
+    }
+  catch(...)
+    {
+      m_error.append("echo \"An error occurred within action().\"\n");
+      throw std::runtime_error(m_error);
     }
 }
 
 void zepeto::add_attach_product(const char *product)
 {
-  if(!product || strlen(product) == 0)
-    return;
-  else if(m_attached_products.count(product) == 0)
-    m_attached_products.insert(product);
+  try
+    {
+      if(!product || strlen(product) == 0)
+	return;
+      else if(m_attached_products.count(product) == 0)
+	m_attached_products.insert(product);
+    }
+  catch(std::bad_alloc &exception)
+    {
+      throw exception;
+    }
+  catch(...)
+    {
+      m_error.append("echo \"add_attach_product() error.\"\n");
+      throw std::runtime_error(m_error);
+    }
 }
 
 void zepeto::add_detach_product(const char *product)
 {
-  if(!product || strlen(product) == 0)
-    return;
-  else if(m_detached_products.count(product) == 0)
-    m_detached_products.insert(product);
+  try
+    {
+      if(!product || strlen(product) == 0)
+	return;
+      else if(m_detached_products.count(product) == 0)
+	m_detached_products.insert(product);
+    }
+  catch(std::bad_alloc &exception)
+    {
+      throw exception;
+    }
+  catch(...)
+    {
+      m_error.append("echo \"add_detach_product() error.\"\n");
+      throw std::runtime_error(m_error);
+    }
 }
 
 void zepeto::final(void)
 {
-  if(m_has_error)
+  try
     {
-      print_help();
-      return;
+      if(!m_error.empty())
+	return;
+
+      std::ifstream file;
+
+      file.open(m_product_file.c_str(), std::ios::in);
+
+      if(!file.is_open())
+	{
+	  m_error.append("echo \"Error opening the zepeto.table file.\"\n");
+	  return;
+	}
+
+      if(file.is_open())
+	while(file.getline(m_buffer, 1024))
+	  {
+	    std::string line(m_buffer);
+
+	    if(line.find("#") == 0)
+	      continue;
+	    else if(line.find("description") != std::string::npos)
+	      continue;
+
+	    size_t index = line.find(".");
+
+	    if(index == std::string::npos)
+	      continue;
+
+	    std::string path;
+
+	    path = line.substr(index + 1);
+	    line = line.substr(0, index);
+
+	    if(line.empty())
+	      continue;
+
+	    if(m_attached_products.count(line) > 0)
+	      action(ATTACH, path);
+
+	    if(m_detached_products.count(line) > 0)
+	      action(DETACH, path);
+	  }
+
+      file.close();
+
+      if(m_fd != -1)
+	if(!m_output.empty())
+	  {
+	    write(m_fd, m_output.c_str(), m_output.length());
+	    fsync(m_fd);
+	  }
+
+      std::cout << m_tempfilename;
     }
-
-  std::ifstream file;
-  std::string line;
-
-  file.open(m_product_file.c_str(), std::ios::in);
-
-  if(file.is_open())
-    while(getline(file, line))
-      {
-	if(line.find("#") == 0)
-	  continue;
-	else if(line.find("description") != std::string::npos)
-	  continue;
-
-	size_t index = line.find(".");
-
-	if(index == std::string::npos)
-	  continue;
-
-	std::string path;
-
-	path = line.substr(index + 1);
-	line = line.substr(0, index);
-
-	if(line.empty())
-	  continue;
-
-	if(m_attached_products.count(line) > 0)
-	  action(ATTACH, path);
-
-	if(m_detached_products.count(line) > 0)
-	  action(DETACH, path);
-      }
-
-  file.close();
-
-  if(m_fd != -1)
-    if(!m_output.empty())
-      {
-	write(m_fd, m_output.c_str(), m_output.length());
-	fsync(m_fd);
-      }
-
-  std::cout << m_tempfilename;
+  catch(std::bad_alloc &exception)
+    {
+      throw exception;
+    }
+  catch(...)
+    {
+      m_error.append("echo \"An error occurred within final().\"\n");
+      throw std::runtime_error(m_error);
+    }
 }
 
 void zepeto::print_about(void)
 {
-  m_output.clear();
-  m_output.append("echo \"zepeto\"\n");
-  m_output.append("echo \"Version: ");
-  m_output.append(ZEPETO_VERSION);
-  m_output.append(".\"\n");
-  m_output.append("echo \"Product file: ");
-  m_output.append(m_product_file);
-  m_output.append(".\"\n");
-  m_output.append("echo \"Temporary directory: ");
-  m_output.append(m_tempdir);
-  m_output.append(".\"\n");
-
-  if(m_fd != -1)
+  try
     {
-      write(m_fd, m_output.c_str(), m_output.length());
-      fsync(m_fd);
-    }
+      m_output.clear();
+      m_output.append("echo \"zepeto\"\n");
+      m_output.append("echo \"Version: ");
+      m_output.append(ZEPETO_VERSION);
+      m_output.append(".\"\n");
+      m_output.append("echo \"Product file: ");
+      m_output.append(m_product_file);
+      m_output.append(".\"\n");
+      m_output.append("echo \"Temporary directory: ");
+      m_output.append(m_tempdir);
+      m_output.append(".\"\n");
 
-  std::cout << m_tempfilename;
+      if(m_fd != -1)
+	{
+	  write(m_fd, m_output.c_str(), m_output.length());
+	  fsync(m_fd);
+	}
+
+      std::cout << m_tempfilename;
+    }
+  catch(std::bad_alloc &exception)
+    {
+      throw exception;
+    }
+  catch(...)
+    {
+      m_error.append("echo \"An error occurred within print_about().\"\n");
+      throw std::runtime_error(m_error);
+    }
 }
 
-void zepeto::print_help(void)
+void zepeto::print_error(void)
 {
-  m_output.clear();
-  m_output.append("echo \"zepeto\"\n");
-  m_output.append("echo \"Incorrect usage. Please read the manual.\"\n");
-
-  if(m_fd != -1)
+  try
     {
-      write(m_fd, m_output.c_str(), m_output.length());
-      fsync(m_fd);
-    }
+      if(m_fd != -1)
+	{
+	  write(m_fd, m_error.c_str(), m_error.length());
+	  fsync(m_fd);
+	}
 
-  std::cout << m_tempfilename;
+      std::cout << m_tempfilename;
+    }
+  catch(std::bad_alloc &exception)
+    {
+      throw exception;
+    }
+  catch(...)
+    {
+      m_error.append("echo \"An error occurred within print_error().\"\n");
+      throw std::runtime_error(m_error);
+    }
 }
 
 void zepeto::print_products(void)
 {
-  char buffer[1024];
-  std::ifstream file;
-  std::set<std::string> set;
-
-  file.open(m_product_file.c_str(), std::ios::in);
-
-  if(file.is_open())
-    while(file.getline(buffer, 1024))
-      {
-	std::string line(buffer);
-
-	if(line.find("#") == 0)
-	  continue;
-
-	size_t index = line.find(".");
-
-	if(index == std::string::npos)
-	  continue;
-
-	line = line.substr(0, index);
-
-	if(line.empty())
-	  continue;
-
-	if(set.count(line) == 0)
-	  set.insert(line);
-      }
-
-  file.close();
-  m_output.clear();
-
-  for(std::set<std::string>::iterator it = set.begin(); it != set.end();
-      ++it)
+  try
     {
-      m_output.append("echo \"");
-      m_output.append(*it);
-      m_output.append("\"\n");
+      std::ifstream file;
+
+      file.open(m_product_file.c_str(), std::ios::in);
+
+      if(!file.is_open())
+	{
+	  m_error.append("echo \"Error opening the zepeto.table file.\"\n");
+	  return;
+	}
+
+      std::set<std::string> set;
+
+      while(file.getline(m_buffer, 1024))
+	{
+	  std::string line(m_buffer);
+
+	  if(line.find("#") == 0)
+	    continue;
+
+	  size_t index = line.find(".");
+
+	  if(index == std::string::npos)
+	    continue;
+
+	  line = line.substr(0, index);
+
+	  if(line.empty())
+	    continue;
+
+	  if(set.count(line) == 0)
+	    set.insert(line);
+	}
+
+      file.close();
+      m_output.clear();
+
+      for(std::set<std::string>::iterator it = set.begin(); it != set.end();
+	  ++it)
+	{
+	  m_output.append("echo \"");
+	  m_output.append(*it);
+	  m_output.append("\"\n");
+	}
+
+      if(m_fd != -1)
+	if(!m_output.empty())
+	  {
+	    write(m_fd, m_output.c_str(), m_output.length());
+	    fsync(m_fd);
+	  }
+
+      std::cout << m_tempfilename;
     }
-
-  if(m_fd != -1)
-    if(!m_output.empty())
-      {
-	write(m_fd, m_output.c_str(), m_output.length());
-	fsync(m_fd);
-      }
-
-  std::cout << m_tempfilename;
+  catch(std::bad_alloc &exception)
+    {
+      throw exception;
+    }
+  catch(...)
+    {
+      m_error.append
+	("echo \"An error occurred within print_products().\"\n");
+      throw std::runtime_error(m_error);
+    }
 }
 
 void zepeto::set_product_file(const char *product_file)
 {
-  if(product_file)
-    m_product_file = product_file;
+  try
+    {
+      if(product_file)
+	m_product_file = product_file;
+    }
+  catch(std::bad_alloc &exception)
+    {
+      throw exception;
+    }
+  catch(...)
+    {
+      m_error.append
+	("echo \"An error occurred within set_product_file().\"\n");
+      throw std::runtime_error(m_error);
+    }
 }
