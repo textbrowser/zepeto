@@ -31,6 +31,9 @@ extern "C"
 #include <string.h>
 }
 
+#include <iostream>
+#include <stdexcept>
+
 #include "zepeto.h"
 
 int main(int argc, char *argv[])
@@ -135,6 +138,11 @@ int main(int argc, char *argv[])
 	    rc = EXIT_FAILURE;
 	    z->print_error();
 	  }
+    }
+  catch(std::runtime_error &exception)
+    {
+      rc = EXIT_FAILURE;
+      std::cerr << exception.what();
     }
   catch(...)
     {

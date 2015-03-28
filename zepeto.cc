@@ -392,8 +392,7 @@ void zepeto::print_error(void)
     }
   catch(...)
     {
-      m_error.append("echo \"An error occurred within print_error().\"\n");
-      throw std::runtime_error(m_error);
+      throw std::runtime_error("An error occurred within print_error().\n");
     }
 }
 
