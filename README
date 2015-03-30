@@ -1,0 +1,21 @@
+Why use zepeto?
+
+Suppose you have several versions of clang or gcc spread across
+several directories. With zepeto, switching from version to version
+is simple.
+
+Suppose we define the zepeto.table file as follows.
+
+gcc4_4.description: GNU C Compiler (gcc4_4)
+gcc4_4.LD_LIBRARY_PATH:/usr/local/gcc-4.4/lib
+gcc4_4.PATH:/usr/local/gcc-4.4/bin
+
+gcc4_5.description: GNU C Compiler (gcc4_5)
+gcc4_5.LD_LIBRARY_PATH:/usr/local/gcc-4.5/lib
+gcc4_5.PATH:/usr/local/gcc-4.5/bin
+
+A zepeto -a gcc4_4 will modify your current shell's environment variables
+so that LD_LIBRARY_PATH AND PATH contain the referenced directories.
+
+A zepeto -d gcc4_4 will remove the defined directories from the current
+shell's environment variables.
