@@ -272,6 +272,9 @@ void zepeto::add_detach_product(const char *product)
 
 void zepeto::final(void)
 {
+  if(!m_buffer)
+    throw std::runtime_error("m_buffer is empty.");
+
   try
     {
       if(!m_error.empty())
@@ -326,7 +329,8 @@ void zepeto::final(void)
 	    fsync(m_fd);
 	  }
 
-      std::cout << m_tempfilename;
+      if(m_tempfilename)
+	std::cout << m_tempfilename;
     }
   catch(std::bad_alloc &exception)
     {
@@ -361,7 +365,8 @@ void zepeto::print_about(void)
 	  fsync(m_fd);
 	}
 
-      std::cout << m_tempfilename;
+      if(m_tempfilename)
+	std::cout << m_tempfilename;
     }
   catch(std::bad_alloc &exception)
     {
@@ -384,7 +389,8 @@ void zepeto::print_error(void)
 	  fsync(m_fd);
 	}
 
-      std::cout << m_tempfilename;
+      if(m_tempfilename)
+	std::cout << m_tempfilename;
     }
   catch(std::bad_alloc &exception)
     {
@@ -398,6 +404,9 @@ void zepeto::print_error(void)
 
 void zepeto::print_products(void)
 {
+  if(!m_buffer)
+    throw std::runtime_error("m_buffer is empty.");
+
   try
     {
       std::ifstream file;
@@ -451,7 +460,8 @@ void zepeto::print_products(void)
 	    fsync(m_fd);
 	  }
 
-      std::cout << m_tempfilename;
+      if(m_tempfilename)
+	std::cout << m_tempfilename;
     }
   catch(std::bad_alloc &exception)
     {
@@ -463,6 +473,12 @@ void zepeto::print_products(void)
 	("echo \"An error occurred within print_products().\"\n");
       throw std::runtime_error(m_error);
     }
+}
+
+void zepeto::remove_temporary_file(void)
+{
+  if(m_tempfilename)
+    std::remove(m_tempfilename);
 }
 
 void zepeto::set_product_file(const char *product_file)

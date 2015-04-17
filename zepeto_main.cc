@@ -149,6 +149,10 @@ int main(int argc, char *argv[])
       rc = EXIT_FAILURE;
     }
 
+  if(rc == EXIT_FAILURE)
+    if(z)
+      z->remove_temporary_file();
+
   delete z;
   return rc;
 }

@@ -18,6 +18,7 @@ class zepeto
   void print_about(void);
   void print_error(void);
   void print_products(void);
+  void remove_temporary_file(void);
   void set_product_file(const char *print_file);
 
  private:
