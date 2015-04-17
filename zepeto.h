@@ -1,7 +1,7 @@
 #ifndef _zepeto_h_
 #define _zepeto_h_
 
-#define ZEPETO_VERSION "1.00"
+#define ZEPETO_VERSION "1.01"
 
 #include <set>
 #include <string>
