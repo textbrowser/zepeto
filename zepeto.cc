@@ -166,22 +166,35 @@ void zepeto::action(const int a, const std::string &string)
 	  }
 	else if(a == DETACH)
 	  {
-	    size_t index = e.find(*it + ":");
+	    size_t index = e.find(":" + *it + ":");
 
 	    if(index != std::string::npos)
-	      e.erase(index, (*it).length() + 1);
+	      /*
+	      ** The directory is between other directories.
+	      */
+
+	      e.erase(index, (*it).length() + 2);
 	    else
 	      {
-		index = e.find(":" + *it);
+		if(e.substr(0, (*it).length() + 1) == (*it) + ":")
+		  /*
+		  ** The directory is at the beginning.
+		  */
 
-		if(index != std::string::npos)
-		  e.erase(index, (*it).length() + 1);
+		  e.erase(0, (*it).length() + 1);
 		else
 		  {
-		    index = e.find(*it);
+		    index = e.find(":" + *it);
 
-		    if(index != std::string::npos)
-		      e.erase(index, (*it).length());
+		    if(index != std::string::npos &&
+		       e.length() == index + (*it).length() + 1)
+		      /*
+		      ** The directory is at the end.
+		      */
+
+		      e.erase(index, (*it).length() + 1);
+		    else if(e == *it)
+		      e.clear();
 		  }
 	      }
 	  }
