@@ -338,15 +338,15 @@ void zepeto::final(void)
 	      if(v.empty())
 		{
 		  m_output.append("unset ");
-		  m_output.append(v);
+		  m_output.append(k);
 		  m_output.append("\n");
 		}
 	      else
 		{
 		  m_output.append("export ");
-		  m_output.append(v);
-		  m_output.append("=");
 		  m_output.append(k);
+		  m_output.append("=");
+		  m_output.append(v);
 		  m_output.append("\n");
 		}
 	    }
