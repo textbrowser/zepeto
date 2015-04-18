@@ -3,6 +3,7 @@
 
 #define ZEPETO_VERSION "1.01"
 
+#include <map>
 #include <set>
 #include <string>
 
@@ -27,6 +28,7 @@ class zepeto
   int m_fd;
   static const int ATTACH = 0;
   static const int DETACH = 1;
+  std::map<std::string, std::string> m_variables;
   std::set<std::string> m_attached_products;
   std::set<std::string> m_detached_products;
   std::string m_error;

@@ -147,12 +147,18 @@ void zepeto::action(const int a, const std::string &string)
 	}
       while(true);
 
-      char *temp = getenv(variable.c_str());
       std::string attached;
       std::string e;
 
-      if(temp)
-	e = temp;
+      if(m_variables.count(variable) != 0)
+	e = m_variables[variable];
+      else
+	{
+	  char *temp = getenv(variable.c_str());
+
+	  if(temp)
+	    e = temp;
+	}
 
       for(std::set<std::string>::iterator it = set.begin(); it != set.end();
 	  ++it)
@@ -206,30 +212,15 @@ void zepeto::action(const int a, const std::string &string)
 	      if(e.empty())
 		attached.erase(attached.length() - 1, 1); // Remove :.
 
-	      m_output.append("export ");
-	      m_output.append(variable);
-	      m_output.append("=");
-	      m_output.append(attached);
-	      m_output.append(e);
-	      m_output.append("\n");
+	      m_variables[variable] = attached + e;
 	    }
 	}
       else if(a == DETACH)
 	{
 	  if(e.empty())
-	    {
-	      m_output.append("unset ");
-	      m_output.append(variable);
-	      m_output.append("\n");
-	    }
+	    m_variables[variable].clear();
 	  else
-	    {
-	      m_output.append("export ");
-	      m_output.append(variable);
-	      m_output.append("=");
-	      m_output.append(e);
-	      m_output.append("\n");
-	    }
+	    m_variables[variable] = e;
 	}
     }
   catch(std::bad_alloc &exception)
@@ -336,11 +327,36 @@ void zepeto::final(void)
       file.close();
 
       if(m_fd != -1)
-	if(!m_output.empty())
-	  {
-	    write(m_fd, m_output.c_str(), m_output.length());
-	    fsync(m_fd);
-	  }
+	{
+	  std::map<std::string, std::string>::iterator it;
+
+	  for(it = m_variables.begin(); it != m_variables.end(); ++it)
+	    {
+	      std::string k(it->first);
+	      std::string v(it->second);
+
+	      if(v.empty())
+		{
+		  m_output.append("unset ");
+		  m_output.append(v);
+		  m_output.append("\n");
+		}
+	      else
+		{
+		  m_output.append("export ");
+		  m_output.append(v);
+		  m_output.append("=");
+		  m_output.append(k);
+		  m_output.append("\n");
+		}
+	    }
+
+	  if(!m_output.empty())
+	    {
+	      write(m_fd, m_output.c_str(), m_output.length());
+	      fsync(m_fd);
+	    }
+	}
 
       if(m_tempfilename)
 	std::cout << m_tempfilename;
