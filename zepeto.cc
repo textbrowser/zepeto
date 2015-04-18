@@ -179,7 +179,7 @@ void zepeto::action(const int a, const std::string &string)
 	      ** The directory is between other directories.
 	      */
 
-	      e.erase(index, (*it).length() + 2);
+	      e.replace(index, (*it).length() + 2, ":");
 	    else
 	      {
 		if(e.substr(0, (*it).length() + 1) == (*it) + ":")
@@ -203,6 +203,9 @@ void zepeto::action(const int a, const std::string &string)
 		      e.clear();
 		  }
 	      }
+
+	    if(e.substr(0, 1) == ":")
+	      e.erase(0, 1);
 	  }
 
       if(a == ATTACH)
