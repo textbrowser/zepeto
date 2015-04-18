@@ -204,8 +204,22 @@ void zepeto::action(const int a, const std::string &string)
 		  }
 	      }
 
+	    do
+	      {
+		index = e.find("::");
+
+		if(index == std::string::npos)
+		  break;
+		else
+		  e.replace(index, 2, ":");
+	      }
+	    while(true);
+
 	    if(e.substr(0, 1) == ":")
 	      e.erase(0, 1);
+
+	    if(e.length() > 0 && e.substr(e.length() - 1, 1) == ":")
+	      e.erase(e.length() - 1, 1);
 	  }
 
       if(a == ATTACH)
