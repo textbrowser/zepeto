@@ -71,11 +71,8 @@ zepeto::zepeto(void)
   memset(m_tempfilename, 0, length);
   strncpy(m_tempfilename, stream.str().c_str(), length - 1);
 
-  if((m_fd = mkstemp(m_tempfilename)) == -1)
-    {
-      m_error.append("echo \"mkstemp() failure.\"\n");
-      throw std::runtime_error(m_error);
-    }
+  if((m_fd = mkstemp(m_tempfilename)) != -1)
+    m_error.append("echo \"mkstemp() failure.\"\n");
 }
 
 zepeto::~zepeto()
