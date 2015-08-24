@@ -8,18 +8,23 @@ zepeto
 is a tool that allows a user to modify a
 shell's environment variables in accordance to defined products.
 .SH OPTIONS
-.IP "-a product"
+.TP
+.BR "-a product"
 This option attaches the given product. The current shell's environment variables
 are modified to reference the paths defined in the zepeto.table file for the given product.
-.IP "-d product"
+.TP
+.BR "-d product"
 This option detaches the given product. That is, the environment
 variables of the current shell will not reference the paths defined in the
 zepeto.table file for the given product.
-.IP "-i"
+.TP
+.BR "-i"
 Display information about zepeto.
-.IP "-l"
+.TP
+.BR "-l"
 List all products stored in the official zepeto.table file.
-.IP "-t table"
+.TP
+.BR "-t table"
 Use the table table instead of the official zepeto.table table.
 .SH FILES
 .B /usr/local/bin/zepeto.bash
