@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
 	    z->print_error();
 	  }
     }
-  catch(std::runtime_error &exception)
+  catch(const std::runtime_error &exception)
     {
       rc = EXIT_FAILURE;
       std::cerr << exception.what();
