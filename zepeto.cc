@@ -237,7 +237,7 @@ void zepeto::action(const int a, const std::string &string)
 	    m_variables[variable] = e;
 	}
     }
-  catch(std::bad_alloc &exception)
+  catch(const std::bad_alloc &exception)
     {
       throw exception;
     }
@@ -257,7 +257,7 @@ void zepeto::add_attach_product(const char *product)
       else if(m_attached_products.count(product) == 0)
 	m_attached_products.insert(product);
     }
-  catch(std::bad_alloc &exception)
+  catch(const std::bad_alloc &exception)
     {
       throw exception;
     }
@@ -277,7 +277,7 @@ void zepeto::add_detach_product(const char *product)
       else if(m_detached_products.count(product) == 0)
 	m_detached_products.insert(product);
     }
-  catch(std::bad_alloc &exception)
+  catch(const std::bad_alloc &exception)
     {
       throw exception;
     }
@@ -375,7 +375,7 @@ void zepeto::final(void)
       if(m_tempfilename)
 	std::cout << m_tempfilename;
     }
-  catch(std::bad_alloc &exception)
+  catch(const std::bad_alloc &exception)
     {
       throw exception;
     }
@@ -411,7 +411,7 @@ void zepeto::print_about(void)
       if(m_tempfilename)
 	std::cout << m_tempfilename;
     }
-  catch(std::bad_alloc &exception)
+  catch(const std::bad_alloc &exception)
     {
       throw exception;
     }
@@ -435,7 +435,7 @@ void zepeto::print_error(void)
       if(m_tempfilename)
 	std::cout << m_tempfilename;
     }
-  catch(std::bad_alloc &exception)
+  catch(const std::bad_alloc &exception)
     {
       throw exception;
     }
@@ -506,7 +506,7 @@ void zepeto::print_products(void)
       if(m_tempfilename)
 	std::cout << m_tempfilename;
     }
-  catch(std::bad_alloc &exception)
+  catch(const std::bad_alloc &exception)
     {
       throw exception;
     }
@@ -531,7 +531,7 @@ void zepeto::set_product_file(const char *product_file)
       if(product_file)
 	m_product_file = product_file;
     }
-  catch(std::bad_alloc &exception)
+  catch(const std::bad_alloc &exception)
     {
       throw exception;
     }

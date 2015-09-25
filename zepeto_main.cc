@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     {
       z = new zepeto();
     }
-  catch(std::bad_alloc &exception)
+  catch(const std::bad_alloc &exception)
     {
       rc = EXIT_FAILURE;
       return rc;
@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
 
       z->final();
     }
-  catch(std::bad_alloc &exception)
+  catch(const std::bad_alloc &exception)
     {
     }
   catch(...)
