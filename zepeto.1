@@ -42,6 +42,6 @@ ALIAS EXAMPLE(S) section for more information.
 Please note that zepeto will use the /tmp directory if it's unable to locate a user's home directory. Although zepeto uses mkstemp(), the use of /tmp may raise security concerns. Pipelining is supported, however, zepeto temporary files may not be deleted if commands exit prematurely. For example, zepeto -l | sort -1 will result in a dangling zepeto temporary file.
 .SH ALIAS EXAMPLE(S)
 .IP "bash: alias zepeto='source /usr/local/bin/zepeto.bash'"
-.IP "sh: alias zepeto='. /usr/local/bin/zepeto.sh'"
+.IP "sh: alias zepeto='/usr/local/bin/zepeto.sh'"
 .SH AUTHOR(S)
 .B Alexis Megas
