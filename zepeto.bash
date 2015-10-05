@@ -11,4 +11,9 @@ else
     rc=1
 fi
 
+if [ -e "$filename" ]
+then
+    rm -f $filename
+fi
+
 return $rc
