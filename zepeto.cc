@@ -311,7 +311,16 @@ void zepeto::final(void)
       if(file.is_open())
 	while(file.getline(m_buffer, 1024))
 	  {
+	    size_t first = 0;
+	    size_t last = 0;
 	    std::string line(m_buffer);
+
+	    first = line.find_first_not_of(' ');
+	    last = line.find_last_not_of(' ');
+
+	    if(first != std::string::npos &&
+	       last != std::string::npos)
+	      line = line.substr(first, last - first + 1);
 
 	    if(line.find("#") == 0)
 	      continue;
@@ -466,7 +475,16 @@ void zepeto::print_products(void)
 
       while(file.getline(m_buffer, 1024))
 	{
+	  size_t first = 0;
+	  size_t last = 0;
 	  std::string line(m_buffer);
+
+	  first = line.find_first_not_of(' ');
+	  last = line.find_last_not_of(' ');
+
+	  if(first != std::string::npos &&
+	     last != std::string::npos)
+	    line = line.substr(first, last - first + 1);
 
 	  if(line.find("#") == 0)
 	    continue;
