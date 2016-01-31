@@ -341,15 +341,41 @@ void zepeto::final(void)
 	      continue;
 
 	    if(m_attached_products.count(line) > 0)
-	      action(ATTACH, path);
+	      {
+		action(ATTACH, path);
+		m_attached_products.erase(line);
+	      }
 
 	    if(m_detached_products.count(line) > 0)
-	      action(DETACH, path);
+	      {
+		action(DETACH, path);
+		m_detached_products.erase(line);
+	      }
 	  }
 
       file.close();
 
-      if(m_fd != -1)
+      {
+	std::set<std::string>::iterator it;
+
+	for(it = m_attached_products.begin();
+	    it != m_attached_products.end(); ++it)
+	  {
+	    m_error.append("echo \"The product ");
+	    m_error.append(*it);
+	    m_error.append(" does not exist.\"\n");
+	  }
+
+	for(it = m_detached_products.begin();
+	    it != m_detached_products.end(); ++it)
+	  {
+	    m_error.append("echo \"The product ");
+	    m_error.append(*it);
+	    m_error.append(" does not exist.\"\n");
+	  }
+      }
+
+      if(m_error.empty() && m_fd != -1)
 	{
 	  std::map<std::string, std::string>::iterator it;
 
@@ -381,8 +407,9 @@ void zepeto::final(void)
 	    }
 	}
 
-      if(m_tempfilename)
-	std::cout << m_tempfilename;
+      if(m_error.empty())
+	if(m_tempfilename)
+	  std::cout << m_tempfilename;
     }
   catch(const std::bad_alloc &exception)
     {
