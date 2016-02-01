@@ -308,6 +308,9 @@ void zepeto::final(void)
 	  return;
 	}
 
+      std::set<std::string> attached_products(m_attached_products);
+      std::set<std::string> detached_products(m_detached_products);
+
       if(file.is_open())
 	while(file.getline(m_buffer, 1024))
 	  {
@@ -343,13 +346,13 @@ void zepeto::final(void)
 	    if(m_attached_products.count(line) > 0)
 	      {
 		action(ATTACH, path);
-		m_attached_products.erase(line);
+		attached_products.erase(line);
 	      }
 
 	    if(m_detached_products.count(line) > 0)
 	      {
 		action(DETACH, path);
-		m_detached_products.erase(line);
+		detached_products.erase(line);
 	      }
 	  }
 
@@ -358,16 +361,16 @@ void zepeto::final(void)
       {
 	std::set<std::string>::iterator it;
 
-	for(it = m_attached_products.begin();
-	    it != m_attached_products.end(); ++it)
+	for(it = attached_products.begin();
+	    it != attached_products.end(); ++it)
 	  {
 	    m_error.append("echo \"The product ");
 	    m_error.append(*it);
 	    m_error.append(" does not exist.\"\n");
 	  }
 
-	for(it = m_detached_products.begin();
-	    it != m_detached_products.end(); ++it)
+	for(it = detached_products.begin();
+	    it != detached_products.end(); ++it)
 	  {
 	    m_error.append("echo \"The product ");
 	    m_error.append(*it);
