@@ -385,7 +385,7 @@ void zepeto::final(void)
 	  std::map<std::string, std::string>::iterator it;
 
 	  if(shell && (strcmp(shell, "/bin/sh") == 0 ||
-		       strcmp(shell, "/usr/bin/sh")) == 0)
+		       strcmp(shell, "/usr/bin/sh") == 0))
 	    sh = true;
 
 	  for(it = m_variables.begin(); it != m_variables.end(); ++it)
