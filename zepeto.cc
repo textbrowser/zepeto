@@ -380,13 +380,7 @@ void zepeto::final(void)
 
       if(m_error.empty() && m_fd != -1)
 	{
-	  bool sh = false;
-	  char *shell = std::getenv("SHELL");
 	  std::map<std::string, std::string>::iterator it;
-
-	  if(shell && (strcmp(shell, "/bin/sh") == 0 ||
-		       strcmp(shell, "/usr/bin/sh") == 0))
-	    sh = true;
 
 	  for(it = m_variables.begin(); it != m_variables.end(); ++it)
 	    {
@@ -401,17 +395,10 @@ void zepeto::final(void)
 		}
 	      else
 		{
-		  if(sh)
-		    m_output.append("echo \"");
-
 		  m_output.append("export ");
 		  m_output.append(k);
 		  m_output.append("=");
 		  m_output.append(v);
-
-		  if(sh)
-		    m_output.append("\"");
-
 		  m_output.append("\n");
 		}
 	    }
