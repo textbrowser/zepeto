@@ -4,7 +4,7 @@ filename="`/usr/local/bin/zepeto.bin "$@"`"
 
 if [ -r "$filename" ]
 then
-    . $filename
+    eval $filename
     rc=$?
     rm -f $filename
 else
