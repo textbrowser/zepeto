@@ -1,6 +1,6 @@
 #!/bin/sh
 
-filename="`/usr/local/bin/zepeto.bin $@`"
+filename="`/usr/local/bin/zepeto.bin "$@"`"
 
 if [ -r "$filename" ]
 then
