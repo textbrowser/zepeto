@@ -1,3 +1,7 @@
+2016.02.12
+
+1. Removed /bin/sh support.
+
 2016.01.31
 
 1. Raise errors on nonexistent products.
