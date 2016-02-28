@@ -125,6 +125,11 @@ int main(int argc, char *argv[])
   catch(const std::bad_alloc &exception)
     {
     }
+  catch(const std::runtime_error &exception)
+    {
+      rc = EXIT_FAILURE;
+      std::cerr << exception.what();
+    }
   catch(...)
     {
     }

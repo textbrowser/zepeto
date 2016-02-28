@@ -45,14 +45,24 @@ extern "C"
 
 zepeto::zepeto(void)
 {
-  m_buffer = new char[1024];
+  m_buffer.reset(new char[1024]);
   m_product_file = "/usr/local/share/zepeto.table";
-  m_tempfilename = 0;
 
-  struct passwd *pw = getpwuid(getuid());
+  long int pwd_length = sysconf(_SC_GETPW_R_SIZE_MAX);
+  size_t buffer_size = 0;
+  struct passwd pwd;
+  struct passwd *result;
 
-  if(pw)
-    m_tempdir = pw->pw_dir;
+  if(pwd_length <= 0)
+    buffer_size = 16384;
+  else
+    buffer_size = static_cast<size_t> (pwd_length);
+
+  std::auto_ptr<char> buffer(new char[buffer_size]);
+
+  if(getpwuid_r(getuid(), &pwd, buffer.get(), buffer_size, &result) == 0 &&
+     result)
+    m_tempdir = pwd.pw_dir;
   else
     m_tempdir = "/tmp";
 
@@ -67,19 +77,17 @@ zepeto::zepeto(void)
 
   size_t length = stream.str().length() + 1;
 
-  m_tempfilename = new char[length];
-  memset(m_tempfilename, 0, length);
-  strncpy(m_tempfilename, stream.str().c_str(), length - 1);
+  m_tempfilename.reset(new char[length]);
+  memset(m_tempfilename.get(), 0, length);
+  strncpy(m_tempfilename.get(), stream.str().c_str(), length - 1);
 
-  if((m_fd = mkstemp(m_tempfilename)) == -1)
+  if((m_fd = mkstemp(m_tempfilename.get())) == -1)
     m_error.append("echo \"mkstemp() failure.\"\n");
 }
 
 zepeto::~zepeto()
 {
   close(m_fd);
-  delete []m_buffer;
-  delete []m_tempfilename;
 }
 
 bool zepeto::has_error(void) const
@@ -290,8 +298,8 @@ void zepeto::add_detach_product(const char *product)
 
 void zepeto::final(void)
 {
-  if(!m_buffer)
-    throw std::runtime_error("m_buffer is empty.");
+  if(!m_buffer.get())
+    throw std::runtime_error("m_buffer is empty.\n");
 
   try
     {
@@ -312,11 +320,11 @@ void zepeto::final(void)
       std::set<std::string> detached_products(m_detached_products);
 
       if(file.is_open())
-	while(file.getline(m_buffer, 1024))
+	while(file.getline(m_buffer.get(), 1024))
 	  {
 	    size_t first = 0;
 	    size_t last = 0;
-	    std::string line(m_buffer);
+	    std::string line(m_buffer.get());
 
 	    first = line.find_first_not_of(' ');
 	    last = line.find_last_not_of(' ');
@@ -411,8 +419,8 @@ void zepeto::final(void)
 	}
 
       if(m_error.empty())
-	if(m_tempfilename)
-	  std::cout << m_tempfilename;
+	if(m_tempfilename.get())
+	  std::cout << m_tempfilename.get();
     }
   catch(const std::bad_alloc &exception)
     {
@@ -447,8 +455,8 @@ void zepeto::print_about(void)
 	  fsync(m_fd);
 	}
 
-      if(m_tempfilename)
-	std::cout << m_tempfilename;
+      if(m_tempfilename.get())
+	std::cout << m_tempfilename.get();
     }
   catch(const std::bad_alloc &exception)
     {
@@ -471,8 +479,8 @@ void zepeto::print_error(void)
 	  fsync(m_fd);
 	}
 
-      if(m_tempfilename)
-	std::cout << m_tempfilename;
+      if(m_tempfilename.get())
+	std::cout << m_tempfilename.get();
     }
   catch(const std::bad_alloc &exception)
     {
@@ -486,8 +494,8 @@ void zepeto::print_error(void)
 
 void zepeto::print_products(void)
 {
-  if(!m_buffer)
-    throw std::runtime_error("m_buffer is empty.");
+  if(!m_buffer.get())
+    throw std::runtime_error("m_buffer is empty.\n");
 
   try
     {
@@ -503,11 +511,11 @@ void zepeto::print_products(void)
 
       std::set<std::string> set;
 
-      while(file.getline(m_buffer, 1024))
+      while(file.getline(m_buffer.get(), 1024))
 	{
 	  size_t first = 0;
 	  size_t last = 0;
-	  std::string line(m_buffer);
+	  std::string line(m_buffer.get());
 
 	  first = line.find_first_not_of(' ');
 	  last = line.find_last_not_of(' ');
@@ -551,8 +559,8 @@ void zepeto::print_products(void)
 	    fsync(m_fd);
 	  }
 
-      if(m_tempfilename)
-	std::cout << m_tempfilename;
+      if(m_tempfilename.get())
+	std::cout << m_tempfilename.get();
     }
   catch(const std::bad_alloc &exception)
     {
@@ -568,8 +576,8 @@ void zepeto::print_products(void)
 
 void zepeto::remove_temporary_file(void)
 {
-  if(m_tempfilename)
-    std::remove(m_tempfilename);
+  if(m_tempfilename.get())
+    std::remove(m_tempfilename.get());
 }
 
 void zepeto::set_product_file(const char *product_file)

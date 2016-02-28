@@ -1,3 +1,8 @@
+2016.02.28
+
+1. Replaced getpwuid() with getpwuid_r().
+2. Use std::auto_ptr, although std::unique_ptr is preferred.
+
 2016.02.12
 
 1. Removed /bin/sh support.
