@@ -101,7 +101,10 @@ void zepeto::action(const int a, const std::string &string)
     {
       if(string.empty())
 	return;
-      else if(string.find(":") == std::string::npos)
+
+      size_t index = string.find(":");
+
+      if(index == std::string::npos)
 	return;
 
       std::string paths;
@@ -111,8 +114,10 @@ void zepeto::action(const int a, const std::string &string)
       ** VARIABLE:p1:p2:...:pn
       */
 
-      paths = string.substr(string.find(":") + 1);
-      variable = string.substr(0, string.find(":"));
+      if(!(index + 1 > string.size()))
+	paths = string.substr(index + 1);
+
+      variable = string.substr(0, index);
 
       if(paths.empty() || variable.empty())
 	return;
@@ -121,7 +126,8 @@ void zepeto::action(const int a, const std::string &string)
 
       do
 	{
-	  size_t index = paths.find(":");
+	  index = paths.find(":");
+
 	  std::string p;
 
 	  if(index == std::string::npos)
@@ -135,8 +141,10 @@ void zepeto::action(const int a, const std::string &string)
 	    {
 	      if(index == std::string::npos)
 		paths.clear();
-	      else
+	      else if(!(index + 1 > paths.size()))
 		paths = paths.substr(index + 1);
+	      else
+		paths.clear();
 
 	      struct stat sb;
 
@@ -177,7 +185,7 @@ void zepeto::action(const int a, const std::string &string)
 	  }
 	else if(a == DETACH)
 	  {
-	    size_t index = e.find(":" + *it + ":");
+	    index = e.find(":" + *it + ":");
 
 	    if(index != std::string::npos)
 	      /*
@@ -345,7 +353,9 @@ void zepeto::final(void)
 
 	    std::string path;
 
-	    path = line.substr(index + 1);
+	    if(!(index + 1 > line.size()))
+	      path = line.substr(index + 1);
+
 	    line = line.substr(0, index);
 
 	    if(line.empty())
