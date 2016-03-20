@@ -1,7 +1,7 @@
 #ifndef _zepeto_h_
 #define _zepeto_h_
 
-#define ZEPETO_VERSION "2016.03.11"
+#define ZEPETO_VERSION "2016.03.20"
 
 #include <map>
 #include <memory>
@@ -24,8 +24,8 @@ class zepeto
   void set_product_file(const char *print_file);
 
  private:
-  std::auto_ptr<char> m_buffer;
-  std::auto_ptr<char> m_tempfilename;
+  char *m_buffer;
+  char *m_tempfilename;
   int m_fd;
   static const int ATTACH = 0;
   static const int DETACH = 1;
