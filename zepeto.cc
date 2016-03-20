@@ -43,10 +43,9 @@ extern "C"
 
 #include "zepeto.h"
 
-zepeto::zepeto(void)
+zepeto::zepeto(void):m_product_file("/usr/local/share/zepeto.table")
 {
   m_buffer = new char[1024];
-  m_product_file = "/usr/local/share/zepeto.table";
 
   long int pwd_length = sysconf(_SC_GETPW_R_SIZE_MAX);
   size_t buffer_size = 0;
@@ -258,7 +257,7 @@ void zepeto::action(const int a, const std::string &string)
     }
   catch(const std::bad_alloc &exception)
     {
-      throw exception;
+      throw;
     }
   catch(...)
     {
@@ -278,7 +277,7 @@ void zepeto::add_attach_product(const char *product)
     }
   catch(const std::bad_alloc &exception)
     {
-      throw exception;
+      throw;
     }
   catch(...)
     {
@@ -298,7 +297,7 @@ void zepeto::add_detach_product(const char *product)
     }
   catch(const std::bad_alloc &exception)
     {
-      throw exception;
+      throw;
     }
   catch(...)
     {
@@ -437,7 +436,7 @@ void zepeto::final(void)
     }
   catch(const std::bad_alloc &exception)
     {
-      throw exception;
+      throw;
     }
   catch(...)
     {
@@ -473,7 +472,7 @@ void zepeto::print_about(void)
     }
   catch(const std::bad_alloc &exception)
     {
-      throw exception;
+      throw;
     }
   catch(...)
     {
@@ -497,7 +496,7 @@ void zepeto::print_error(void)
     }
   catch(const std::bad_alloc &exception)
     {
-      throw exception;
+      throw;
     }
   catch(...)
     {
@@ -577,7 +576,7 @@ void zepeto::print_products(void)
     }
   catch(const std::bad_alloc &exception)
     {
-      throw exception;
+      throw;
     }
   catch(...)
     {
@@ -602,7 +601,7 @@ void zepeto::set_product_file(const char *product_file)
     }
   catch(const std::bad_alloc &exception)
     {
-      throw exception;
+      throw;
     }
   catch(...)
     {

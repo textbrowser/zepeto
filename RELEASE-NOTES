@@ -1,6 +1,7 @@
 2016.03.20
 
-1. Corrected use of auto pointers on arrays.
+1. Avoid throwing copies of caught exceptions.
+2. Corrected use of auto pointers on arrays.
 
 2016.03.11
 
