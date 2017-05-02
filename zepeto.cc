@@ -336,8 +336,8 @@ void zepeto::final(void)
 	    size_t last = 0;
 	    std::string line(m_buffer);
 
-	    first = line.find_first_not_of(' ');
-	    last = line.find_last_not_of(' ');
+	    first = line.find_first_not_of(" \t");
+	    last = line.find_last_not_of(" \t");
 
 	    if(first != std::string::npos &&
 	       last != std::string::npos)
@@ -529,8 +529,8 @@ void zepeto::print_products(void)
 	  size_t last = 0;
 	  std::string line(m_buffer);
 
-	  first = line.find_first_not_of(' ');
-	  last = line.find_last_not_of(' ');
+	  first = line.find_first_not_of(" \t");
+	  last = line.find_last_not_of(" \t");
 
 	  if(first != std::string::npos &&
 	     last != std::string::npos)

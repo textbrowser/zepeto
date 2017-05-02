@@ -1,3 +1,8 @@
+2017.05.02
+
+1. Corrected use of string::find_first_not_of() with respect to spaces.
+   Must also consider tabs.
+
 2016.03.20
 
 1. Avoid throwing copies of caught exceptions.
