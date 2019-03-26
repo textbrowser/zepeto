@@ -270,7 +270,7 @@ void zepeto::add_attach_product(const char *product)
 {
   try
     {
-      if(!product || strlen(product) == 0)
+      if(!product || strnlen(product, 1024) == 0)
 	return;
       else if(m_attached_products.count(product) == 0)
 	m_attached_products.insert(product);
@@ -290,7 +290,7 @@ void zepeto::add_detach_product(const char *product)
 {
   try
     {
-      if(!product || strlen(product) == 0)
+      if(!product || strnlen(product, 1024) == 0)
 	return;
       else if(m_detached_products.count(product) == 0)
 	m_detached_products.insert(product);
