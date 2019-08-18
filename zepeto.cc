@@ -34,12 +34,9 @@ extern "C"
 #include <unistd.h>
 }
 
-#include <cstdlib>
 #include <fstream>
 #include <iostream>
-#include <list>
 #include <sstream>
-#include <stdexcept>
 
 #include "zepeto.h"
 
