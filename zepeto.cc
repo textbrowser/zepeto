@@ -27,6 +27,7 @@
 
 extern "C"
 {
+#include <dirent.h>
 #include <pwd.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -581,6 +582,26 @@ void zepeto::print_products(void)
 	("echo \"An error occurred within print_products().\"\n");
       throw std::runtime_error(m_error);
     }
+}
+
+void zepeto::purge(void)
+{
+  DIR *dir = 0;
+  char buffer[512];
+  struct dirent *dirent = 0;
+
+  if((dir = opendir("/tmp")))
+    while((dirent = readdir(dir)))
+      if(strncmp(dirent->d_name,
+		 ".zepeto.sourceme.",
+		 strlen(".zepeto.sourceme.")) == 0)
+	{
+	  snprintf(buffer, sizeof(buffer), "/tmp/%s", dirent->d_name);
+	  std::remove(buffer);
+	}
+
+  if(dir)
+    closedir (dir);
 }
 
 void zepeto::remove_temporary_file(void)

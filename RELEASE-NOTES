@@ -1,3 +1,7 @@
+2019.11.09
+
+1. Introduced command-line option -p for purging dangling zepeto files.
+
 2019.03.26
 
 1. strnlen() instead of strlen().

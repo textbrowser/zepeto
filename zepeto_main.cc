@@ -62,7 +62,13 @@ int main(int argc, char *argv[])
   try
     {
       for(int i = 1; i < argc; i++)
-	if(argv[i] && strcmp(argv[i], "-t") == 0)
+	if(argv[i] && strcmp(argv[i], "-p") == 0)
+	  {
+	    z->purge();
+	    rc = EXIT_SUCCESS;
+	    goto done_label;
+	  }
+	else if(argv[i] && strcmp(argv[i], "-t") == 0)
 	  {
 	    i += 1;
 

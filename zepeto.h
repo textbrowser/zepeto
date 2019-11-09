@@ -1,7 +1,7 @@
 #ifndef _zepeto_h_
 #define _zepeto_h_
 
-#define ZEPETO_VERSION "2019.08.20"
+#define ZEPETO_VERSION "2019.11.09"
 
 #include <map>
 #include <set>
@@ -19,6 +19,7 @@ class zepeto
   void print_about(void);
   void print_error(void);
   void print_products(void);
+  void purge(void);
   void remove_temporary_file(void);
   void set_product_file(const char *print_file);
 
