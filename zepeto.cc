@@ -306,9 +306,6 @@ void zepeto::add_detach_product(const char *product)
 
 void zepeto::final(void)
 {
-  if(!m_buffer)
-    throw std::runtime_error("m_buffer is empty.\n");
-
   try
     {
       if(!m_error.empty())
@@ -429,8 +426,7 @@ void zepeto::final(void)
 	}
 
       if(m_error.empty())
-	if(m_tempfilename)
-	  std::cout << m_tempfilename;
+	std::cout << m_tempfilename;
     }
   catch(const std::bad_alloc &exception)
     {
@@ -465,8 +461,7 @@ void zepeto::print_about(void)
 	  fsync(m_fd);
 	}
 
-      if(m_tempfilename)
-	std::cout << m_tempfilename;
+      std::cout << m_tempfilename;
     }
   catch(const std::bad_alloc &exception)
     {
@@ -489,8 +484,7 @@ void zepeto::print_error(void)
 	  fsync(m_fd);
 	}
 
-      if(m_tempfilename)
-	std::cout << m_tempfilename;
+      std::cout << m_tempfilename;
     }
   catch(const std::bad_alloc &exception)
     {
@@ -504,9 +498,6 @@ void zepeto::print_error(void)
 
 void zepeto::print_products(void)
 {
-  if(!m_buffer)
-    throw std::runtime_error("m_buffer is empty.\n");
-
   try
     {
       std::ifstream file;
@@ -569,8 +560,7 @@ void zepeto::print_products(void)
 	    fsync(m_fd);
 	  }
 
-      if(m_tempfilename)
-	std::cout << m_tempfilename;
+      std::cout << m_tempfilename;
     }
   catch(const std::bad_alloc &exception)
     {
@@ -587,7 +577,6 @@ void zepeto::print_products(void)
 void zepeto::purge(void)
 {
   DIR *dir = 0;
-  char buffer[512];
   struct dirent *dirent = 0;
 
   if((dir = opendir("/tmp")))
@@ -596,18 +585,37 @@ void zepeto::purge(void)
 		 ".zepeto.sourceme.",
 		 strlen(".zepeto.sourceme.")) == 0)
 	{
-	  snprintf(buffer, sizeof(buffer), "/tmp/%s", dirent->d_name);
-	  std::remove(buffer);
+	  std::string string;
+
+	  string += "/tmp/";
+	  string += dirent->d_name;
+	  std::remove(string.data());
 	}
 
   if(dir)
-    closedir (dir);
+    closedir(dir);
+
+  if((dir = opendir(m_tempdir.data())))
+    while((dirent = readdir(dir)))
+      if(strncmp(dirent->d_name,
+		 ".zepeto.sourceme.",
+		 strlen(".zepeto.sourceme.")) == 0)
+	{
+	  std::string string;
+
+	  string += m_tempdir;
+	  string += "/";
+	  string += dirent->d_name;
+	  std::remove(string.data());
+	}
+
+  if(dir)
+    closedir(dir);
 }
 
 void zepeto::remove_temporary_file(void)
 {
-  if(m_tempfilename)
-    std::remove(m_tempfilename);
+  std::remove(m_tempfilename);
 }
 
 void zepeto::set_product_file(const char *product_file)
