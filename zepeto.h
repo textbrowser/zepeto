@@ -10,7 +10,7 @@
 class zepeto
 {
  public:
-  zepeto(void);
+  zepeto(const bool create_temporary_file);
   ~zepeto();
   bool has_error(void) const;
   void add_attach_product(const char *product);
@@ -25,6 +25,7 @@ class zepeto
 
  private:
   char *m_buffer;
+  char *m_pwd_buffer;
   char *m_tempfilename;
   int m_fd;
   static const int ATTACH = 0;

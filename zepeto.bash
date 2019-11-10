@@ -7,8 +7,6 @@ then
     source $filename
     rc=$?
     rm -f $filename
-else
-    rc=1
 fi
 
 if [ -e "$filename" ]

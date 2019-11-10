@@ -46,31 +46,18 @@ int main(int argc, char *argv[])
 
   try
     {
-      z = new zepeto();
-    }
-  catch(const std::bad_alloc &exception)
-    {
-      rc = EXIT_FAILURE;
-      return rc;
-    }
-  catch(...)
-    {
-      rc = EXIT_FAILURE;
-      goto done_label;
-    }
-
-  try
-    {
       for(int i = 1; i < argc; i++)
 	if(argv[i] && strcmp(argv[i], "-p") == 0)
 	  {
-	    z->purge();
 	    rc = EXIT_SUCCESS;
+	    z = new zepeto(false);
+	    z->purge();
 	    goto done_label;
 	  }
 	else if(argv[i] && strcmp(argv[i], "-t") == 0)
 	  {
 	    i += 1;
+	    z = new zepeto(true);
 
 	    if(i < argc && argv[i])
 	      z->set_product_file(argv[i]);
@@ -82,6 +69,9 @@ int main(int argc, char *argv[])
 
 	    break;
 	  }
+
+      if(!z)
+	z = new zepeto(true);
 
       for(int i = 1; i < argc; i++)
 	if(argv[i] && strcmp(argv[i], "-a") == 0)
@@ -130,6 +120,10 @@ int main(int argc, char *argv[])
     }
   catch(const std::bad_alloc &exception)
     {
+      rc = EXIT_FAILURE;
+
+      if(!z)
+	return rc;
     }
   catch(const std::runtime_error &exception)
     {

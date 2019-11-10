@@ -41,7 +41,8 @@ extern "C"
 
 #include "zepeto.h"
 
-zepeto::zepeto(void):m_product_file("/usr/local/share/zepeto.table")
+zepeto::zepeto(const bool create_temporary_file):
+  m_product_file("/usr/local/share/zepeto.table")
 {
   m_buffer = new char[1024];
 
@@ -55,38 +56,43 @@ zepeto::zepeto(void):m_product_file("/usr/local/share/zepeto.table")
   else
     buffer_size = static_cast<size_t> (pwd_length);
 
-  char *buffer = new char[buffer_size];
+  m_pwd_buffer = new char[buffer_size];
 
-  if(getpwuid_r(getuid(), &pwd, buffer, buffer_size, &result) == 0 &&
+  if(getpwuid_r(getuid(), &pwd, m_pwd_buffer, buffer_size, &result) == 0 &&
      result)
     m_tempdir = pwd.pw_dir;
   else
     m_tempdir = "/tmp";
 
-  delete []buffer;
-  std::ostringstream stream;
+  m_tempfilename = 0;
 
-  stream << m_tempdir
-	 << "/.zepeto.sourceme."
-	 << getuid()
-	 << "."
-	 << getpid()
-	 << "XXXXXX";
+  if(create_temporary_file)
+    {
+      std::ostringstream stream;
 
-  size_t length = stream.str().length() + 1;
+      stream << m_tempdir
+	     << "/.zepeto.sourceme."
+	     << getuid()
+	     << "."
+	     << getpid()
+	     << "XXXXXX";
 
-  m_tempfilename = new char[length];
-  memset(m_tempfilename, 0, length);
-  strncpy(m_tempfilename, stream.str().c_str(), length - 1);
+      size_t length = stream.str().length() + 1;
 
-  if((m_fd = mkstemp(m_tempfilename)) == -1)
-    m_error.append("echo \"mkstemp() failure.\"\n");
+      m_tempfilename = new char[length];
+      memset(m_tempfilename, 0, length);
+      strncpy(m_tempfilename, stream.str().c_str(), length - 1);
+
+      if((m_fd = mkstemp(m_tempfilename)) == -1)
+	m_error.append("echo \"mkstemp() failure.\"\n");
+    }
 }
 
 zepeto::~zepeto()
 {
   close(m_fd);
   delete []m_buffer;
+  delete []m_pwd_buffer;
   delete []m_tempfilename;
 }
 
@@ -426,7 +432,8 @@ void zepeto::final(void)
 	}
 
       if(m_error.empty())
-	std::cout << m_tempfilename;
+	if(m_tempfilename)
+	  std::cout << m_tempfilename;
     }
   catch(const std::bad_alloc &exception)
     {
@@ -461,7 +468,8 @@ void zepeto::print_about(void)
 	  fsync(m_fd);
 	}
 
-      std::cout << m_tempfilename;
+      if(m_tempfilename)
+	std::cout << m_tempfilename;
     }
   catch(const std::bad_alloc &exception)
     {
@@ -484,7 +492,8 @@ void zepeto::print_error(void)
 	  fsync(m_fd);
 	}
 
-      std::cout << m_tempfilename;
+      if(m_tempfilename)
+	std::cout << m_tempfilename;
     }
   catch(const std::bad_alloc &exception)
     {
@@ -560,7 +569,8 @@ void zepeto::print_products(void)
 	    fsync(m_fd);
 	  }
 
-      std::cout << m_tempfilename;
+      if(m_tempfilename)
+	std::cout << m_tempfilename;
     }
   catch(const std::bad_alloc &exception)
     {
@@ -615,7 +625,8 @@ void zepeto::purge(void)
 
 void zepeto::remove_temporary_file(void)
 {
-  std::remove(m_tempfilename);
+  if(m_tempfilename)
+    std::remove(m_tempfilename);
 }
 
 void zepeto::set_product_file(const char *product_file)
