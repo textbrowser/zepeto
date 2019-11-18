@@ -2,7 +2,7 @@ Why use zepeto?
 
 Suppose you have several versions of clang or gcc spread across
 several directories. With zepeto, switching from version to version
-is simple.
+is simple. C++11 is required.
 
 Suppose we define the zepeto.table file as follows.
 

@@ -173,7 +173,7 @@ void zepeto::action(const int a, const std::string &string)
 	e = m_variables[variable];
       else
 	{
-	  char *temp = std::getenv(variable.c_str());
+	  const char *temp = std::getenv(variable.c_str());
 
 	  if(temp)
 	    e = temp;

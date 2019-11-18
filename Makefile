@@ -1,7 +1,7 @@
 CXX_OPTIONS = -Wall -Wconversion -Werror -Wextra -Wformat=2 \
 	      -Wpointer-arith -Wshadow -Wsign-conversion \
 	      -Wstack-protector -Wstrict-overflow=5 \
-	      -fPIE -fstack-protector-all -pedantic
+	      -fPIE -fstack-protector-all -pedantic -std=c++11
 
 SOURCE	= zepeto.cc \
 	  zepeto_main.cc
