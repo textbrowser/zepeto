@@ -1,3 +1,7 @@
+2020.03.11
+
+1. Display error if product does not exist.
+
 2019.11.09
 
 1. Introduced command-line option -p for purging dangling zepeto files.

@@ -45,6 +45,7 @@ zepeto::zepeto(const bool create_temporary_file):
   m_product_file("/usr/local/share/zepeto.table")
 {
   m_buffer = new char[1024];
+  m_fd = -1;
 
   long int pwd_length = sysconf(_SC_GETPW_R_SIZE_MAX);
   size_t buffer_size = 0;
@@ -179,7 +180,8 @@ void zepeto::action(const int a, const std::string &string)
 	    e = temp;
 	}
 
-      for(std::set<std::string>::iterator it = set.begin(); it != set.end();
+      for(std::set<std::string>::iterator it = set.begin();
+	  it != set.end();
 	  ++it)
 	if(a == ATTACH)
 	  {
@@ -383,7 +385,8 @@ void zepeto::final(void)
 	std::set<std::string>::iterator it;
 
 	for(it = attached_products.begin();
-	    it != attached_products.end(); ++it)
+	    it != attached_products.end();
+	    ++it)
 	  {
 	    m_error.append("echo \"The product ");
 	    m_error.append(*it);
@@ -391,7 +394,8 @@ void zepeto::final(void)
 	  }
 
 	for(it = detached_products.begin();
-	    it != detached_products.end(); ++it)
+	    it != detached_products.end();
+	    ++it)
 	  {
 	    m_error.append("echo \"The product ");
 	    m_error.append(*it);
@@ -554,7 +558,8 @@ void zepeto::print_products(void)
       file.close();
       m_output.clear();
 
-      for(std::set<std::string>::iterator it = set.begin(); it != set.end();
+      for(std::set<std::string>::iterator it = set.begin();
+	  it != set.end();
 	  ++it)
 	{
 	  m_output.append("echo \"");

@@ -1,7 +1,7 @@
 #ifndef _zepeto_h_
 #define _zepeto_h_
 
-#define ZEPETO_VERSION "2019.11.09"
+#define ZEPETO_VERSION "2020.03.11"
 
 #include <map>
 #include <set>

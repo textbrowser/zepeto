@@ -135,6 +135,9 @@ int main(int argc, char *argv[])
     }
 
  done_label:
+
+  bool remove_temporary_file = false;
+
   try
     {
       if(z)
@@ -147,14 +150,16 @@ int main(int argc, char *argv[])
   catch(const std::runtime_error &exception)
     {
       rc = EXIT_FAILURE;
+      remove_temporary_file = true;
       std::cerr << exception.what();
     }
   catch(...)
     {
       rc = EXIT_FAILURE;
+      remove_temporary_file = true;
     }
 
-  if(rc == EXIT_FAILURE)
+  if(remove_temporary_file)
     if(z)
       z->remove_temporary_file();
 
