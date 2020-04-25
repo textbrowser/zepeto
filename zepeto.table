@@ -1,8 +1,5 @@
 # Order is not required.
 
-qt5_2_1.description:Qt 5.2.1 (qt5_2_1)
-qt5_2_1.LD_LIBRARY_PATH:/usr/local/Qt-5.2.1/lib
-qt5_2_1.PATH:/usr/local/Qt-5.2.1/bin
-
-sbin.description:sbin
-sbin.PATH:/sbin
+qt5_12_x.description:Qt 5.12.x (qt5_12_x)
+qt5_12_x.LD_LIBRARY_PATH:/home/saturn/Qt/5.12.8/gcc_64/lib
+qt5_12_x.PATH:/home/saturn/Qt/5.12.8/gcc_64/bin
