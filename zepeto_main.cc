@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
 
   int rc = EXIT_SUCCESS;
-  zepeto *z = 0;
+  zepeto *z = nullptr;
 
   try
     {

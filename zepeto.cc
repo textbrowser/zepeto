@@ -65,7 +65,7 @@ zepeto::zepeto(const bool create_temporary_file):
   else
     m_tempdir = "/tmp";
 
-  m_tempfilename = 0;
+  m_tempfilename = nullptr;
 
   if(create_temporary_file)
     {
@@ -591,8 +591,8 @@ void zepeto::print_products(void)
 
 void zepeto::purge(void)
 {
-  DIR *dir = 0;
-  struct dirent *dirent = 0;
+  DIR *dir = nullptr;
+  struct dirent *dirent = nullptr;
 
   if((dir = opendir("/tmp")))
     while((dirent = readdir(dir)))

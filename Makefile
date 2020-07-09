@@ -9,6 +9,7 @@ CXX_OPTIONS = -Wall \
 	      -Wsign-conversion \
 	      -Wstack-protector \
 	      -Wstrict-overflow=5 \
+	      -Wzero-as-null-pointer-constant \
 	      -fPIE \
 	      -fstack-protector-all \
 	      -pedantic \
