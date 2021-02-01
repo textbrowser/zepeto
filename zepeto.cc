@@ -521,7 +521,7 @@ void zepeto::print_products(void)
 	  return;
 	}
 
-      std::set<std::string> set;
+      std::map<std::string, char> map;
 
       while(file.getline(m_buffer, 1024))
 	{
@@ -549,17 +549,17 @@ void zepeto::print_products(void)
 	  if(line.empty())
 	    continue;
 
-	  if(set.count(line) == 0)
-	    set.insert(line);
+	  if(map.count(line) == 0)
+	    map[line] = '0';
 	}
 
       file.close();
       m_output.clear();
 
-      for(auto it = set.begin(); it != set.end(); ++it)
+      for(auto it = map.begin(); it != map.end(); ++it)
 	{
 	  m_output.append("echo \"");
-	  m_output.append(*it);
+	  m_output.append(it->first);
 	  m_output.append("\"\n");
 	}
 
