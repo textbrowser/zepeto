@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
   if(argc <= 1 || !argv)
     return EXIT_FAILURE;
 
-  int rc = EXIT_SUCCESS;
+  auto rc = EXIT_SUCCESS;
   zepeto *z = nullptr;
 
   try
@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
 
  done_label:
 
-  bool remove_temporary_file = false;
+  auto remove_temporary_file = false;
 
   try
     {

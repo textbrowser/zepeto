@@ -47,9 +47,9 @@ zepeto::zepeto(const bool create_temporary_file):
   m_buffer = new char[1024];
   m_fd = -1;
 
-  long int pwd_length = sysconf(_SC_GETPW_R_SIZE_MAX);
+  auto pwd_length = sysconf(_SC_GETPW_R_SIZE_MAX);
   size_t buffer_size = 0;
-  struct passwd pwd;
+  struct passwd pwd = {};
   struct passwd *result;
 
   if(pwd_length <= 0)
@@ -78,7 +78,7 @@ zepeto::zepeto(const bool create_temporary_file):
 	     << getpid()
 	     << "XXXXXX";
 
-      size_t length = stream.str().length() + 1;
+      auto length = stream.str().length() + 1;
 
       m_tempfilename = new char[length];
       memset(m_tempfilename, 0, length);
@@ -109,7 +109,7 @@ void zepeto::action(const int a, const std::string &string)
       if(string.empty())
 	return;
 
-      size_t index = string.find(":");
+      auto index = string.find(":");
 
       if(index == std::string::npos)
 	return;
@@ -153,7 +153,7 @@ void zepeto::action(const int a, const std::string &string)
 	      else
 		paths.clear();
 
-	      struct stat sb;
+	      struct stat sb = {};
 
 	      if(stat(p.c_str(), &sb) != 0)
 		{
@@ -174,15 +174,13 @@ void zepeto::action(const int a, const std::string &string)
 	e = m_variables[variable];
       else
 	{
-	  const char *temp = std::getenv(variable.c_str());
+	  const auto temp = std::getenv(variable.c_str());
 
 	  if(temp)
 	    e = temp;
 	}
 
-      for(std::set<std::string>::iterator it = set.begin();
-	  it != set.end();
-	  ++it)
+      for(auto it = set.begin(); it != set.end(); ++it)
 	if(a == ATTACH)
 	  {
 	    if(e.find(*it) == std::string::npos)
@@ -329,8 +327,8 @@ void zepeto::final(void)
 	  return;
 	}
 
-      std::set<std::string> attached_products(m_attached_products);
-      std::set<std::string> detached_products(m_detached_products);
+      auto attached_products(m_attached_products);
+      auto detached_products(m_detached_products);
 
       if(file.is_open())
 	while(file.getline(m_buffer, 1024))
@@ -351,7 +349,7 @@ void zepeto::final(void)
 	    else if(line.find("description") != std::string::npos)
 	      continue;
 
-	    size_t index = line.find(".");
+	    auto index = line.find(".");
 
 	    if(index == std::string::npos)
 	      continue;
@@ -409,8 +407,8 @@ void zepeto::final(void)
 
 	  for(it = m_variables.begin(); it != m_variables.end(); ++it)
 	    {
-	      std::string k(it->first);
-	      std::string v(it->second);
+	      auto k(it->first);
+	      auto v(it->second);
 
 	      if(v.empty())
 		{
@@ -541,7 +539,7 @@ void zepeto::print_products(void)
 	  if(line.find("#") == 0)
 	    continue;
 
-	  size_t index = line.find(".");
+	  auto index = line.find(".");
 
 	  if(index == std::string::npos)
 	    continue;
@@ -558,9 +556,7 @@ void zepeto::print_products(void)
       file.close();
       m_output.clear();
 
-      for(std::set<std::string>::iterator it = set.begin();
-	  it != set.end();
-	  ++it)
+      for(auto it = set.begin(); it != set.end(); ++it)
 	{
 	  m_output.append("echo \"");
 	  m_output.append(*it);
