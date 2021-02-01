@@ -1,5 +1,9 @@
 # Order is not required.
 
 qt5_12_x.description:Qt 5.12.x (qt5_12_x)
-qt5_12_x.LD_LIBRARY_PATH:/home/saturn/Qt/5.12.8/gcc_64/lib
-qt5_12_x.PATH:/home/saturn/Qt/5.12.8/gcc_64/bin
+qt5_12_x.LD_LIBRARY_PATH:/home/saturn/Qt/5.12/gcc_64/lib
+qt5_12_x.PATH:/home/saturn/Qt/5.12/gcc_64/bin
+
+qt5_15_x.description:Qt 5.15.x (qt5_15_x)
+qt5_15_x.LD_LIBRARY_PATH:/home/saturn/Qt/5.15/gcc_64/lib
+qt5_15_x.PATH:/home/saturn/Qt/5.15/gcc_64/bin

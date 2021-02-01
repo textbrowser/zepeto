@@ -1,6 +1,13 @@
 #!/bin/bash
 
-filename="$(/usr/local/bin/zepeto.bin $*)"
+rc=1
+
+if [ -x ./zepeto.bin ]
+then
+    filename="$(./zepeto.bin $*)"
+else
+    filename="$(/usr/local/bin/zepeto.bin $*)"
+fi
 
 if [ -r "$filename" ]
 then
@@ -14,4 +21,4 @@ then
     rm -f $filename
 fi
 
-return $rc
+exit $rc
