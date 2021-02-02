@@ -5,7 +5,8 @@ rc=1
 if [ -x ./zepeto.bin ]
 then
     filename="$(./zepeto.bin $*)"
-else
+elif [ -x /usr/local/bin/zepeto.bin ]
+then
     filename="$(/usr/local/bin/zepeto.bin $*)"
 fi
 
@@ -21,4 +22,4 @@ then
     rm -f $filename
 fi
 
-exit $rc
+return $rc
