@@ -19,3 +19,8 @@ so that LD_LIBRARY_PATH and PATH contain the referenced directories.
 
 A zepeto -d gcc4_4 will remove the defined directories from the current
 shell's environment variables.
+
+Local Testing
+
+> cat $(./zepeto.bin -l -t zepeto.table)
+> ./zepeto.bin -p

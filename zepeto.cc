@@ -41,10 +41,14 @@ extern "C"
 
 #include "zepeto.h"
 
+static size_t s_maximum_buffer_length = 1024;
+static ssize_t s_maximum_buffer_length_ss = static_cast<ssize_t>
+  (s_maximum_buffer_length);
+
 zepeto::zepeto(const bool create_temporary_file):
   m_product_file("/usr/local/share/zepeto.table")
 {
-  m_buffer = new char[1024];
+  m_buffer = new char[s_maximum_buffer_length];
   m_fd = -1;
 
   auto pwd_length = sysconf(_SC_GETPW_R_SIZE_MAX);
@@ -274,7 +278,7 @@ void zepeto::add_attach_product(const char *product)
 {
   try
     {
-      if(!product || strnlen(product, 1024) == 0)
+      if(!product || strnlen(product, s_maximum_buffer_length) == 0)
 	return;
       else if(m_attached_products.count(product) == 0)
 	m_attached_products.insert(product);
@@ -294,7 +298,7 @@ void zepeto::add_detach_product(const char *product)
 {
   try
     {
-      if(!product || strnlen(product, 1024) == 0)
+      if(!product || strnlen(product, s_maximum_buffer_length) == 0)
 	return;
       else if(m_detached_products.count(product) == 0)
 	m_detached_products.insert(product);
@@ -306,6 +310,26 @@ void zepeto::add_detach_product(const char *product)
   catch(...)
     {
       m_error.append("echo \"add_detach_product() error.\"\n");
+      throw std::runtime_error(m_error);
+    }
+}
+
+void zepeto::add_print_product(const char *product)
+{
+  try
+    {
+      if(!product || strnlen(product, s_maximum_buffer_length) == 0)
+	return;
+      else if(m_printed_products.count(product) == 0)
+	m_printed_products.insert(product);
+    }
+  catch(const std::bad_alloc &exception)
+    {
+      throw;
+    }
+  catch(...)
+    {
+      m_error.append("echo \"add_print_product() error.\"\n");
       throw std::runtime_error(m_error);
     }
 }
@@ -329,9 +353,10 @@ void zepeto::final(void)
 
       auto attached_products(m_attached_products);
       auto detached_products(m_detached_products);
+      auto printed_products(m_printed_products);
 
       if(file.is_open())
-	while(file.getline(m_buffer, 1024))
+	while(file.getline(m_buffer, s_maximum_buffer_length_ss))
 	  {
 	    size_t first = 0;
 	    size_t last = 0;
@@ -375,6 +400,21 @@ void zepeto::final(void)
 		action(DETACH, path);
 		detached_products.erase(line);
 	      }
+
+	    if(m_printed_products.count(line) > 0)
+	      {
+		if(printed_products.count(line) > 0)
+		  {
+		    m_output.append("# ");
+		    m_output.append(line);
+		    m_output.append("\n");
+		  }
+
+		m_output.append("# ");
+		m_output.append(path);
+		m_output.append("\n");
+		printed_products.erase(line);
+	      }
 	  }
 
       file.close();
@@ -393,6 +433,15 @@ void zepeto::final(void)
 
 	for(it = detached_products.begin();
 	    it != detached_products.end();
+	    ++it)
+	  {
+	    m_error.append("echo \"The product ");
+	    m_error.append(*it);
+	    m_error.append(" does not exist.\"\n");
+	  }
+
+	for(it = printed_products.begin();
+	    it != printed_products.end();
 	    ++it)
 	  {
 	    m_error.append("echo \"The product ");
@@ -523,7 +572,7 @@ void zepeto::print_products(void)
 
       std::map<std::string, char> map;
 
-      while(file.getline(m_buffer, 1024))
+      while(file.getline(m_buffer, s_maximum_buffer_length_ss))
 	{
 	  size_t first = 0;
 	  size_t last = 0;

@@ -1,4 +1,4 @@
-.TH zepeto 1 "November 9, 2019"
+.TH zepeto 1 "March 3, 2021"
 .SH NAME
 zepeto
 ..SH SYNOPSIS
@@ -19,16 +19,19 @@ variables of the current shell will not reference the paths defined in the
 zepeto.table file for the given product.
 .TP
 .BI -i
-Display information about zepeto.
+Display information about zepeto. Other instructions are disregarded unless noted.
 .TP
 .BI -l
-List all products stored in the official zepeto.table file.
+List all products stored in the official zepeto.table file. Other instructions are disregarded unless noted.
 .TP
 .BI -p
-Purge dangling zepeto files.
+Purge dangling zepeto files. Executed before all other instructions regardless of order. Only the first instance is considered.
+.TP
+.BI -s
+Show information about the given product.
 .TP
 .BI -t " table"
-Use the table table instead of the official zepeto.table table.
+Use the table table instead of the official zepeto.table table. Executed after -p. Only the first valid instance is considered.
 .SH FILES
 .B
  /usr/local/bin/zepeto.bash
@@ -37,6 +40,7 @@ Use the table table instead of the official zepeto.table table.
 .B
  /usr/local/share/zepeto.table
 .SH NOTES
+zepeto will attempt to execute all of the provided instructions unless noted.
 zepeto will issue a warning if a product references a nonexistent path.
 You will need to create a zepeto alias for BASH. Please see the
 ALIAS EXAMPLE(S) section for more information.

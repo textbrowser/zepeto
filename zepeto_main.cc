@@ -49,25 +49,38 @@ int main(int argc, char *argv[])
       for(int i = 1; i < argc; i++)
 	if(argv[i] && strcmp(argv[i], "-p") == 0)
 	  {
-	    rc = EXIT_SUCCESS;
 	    z = new zepeto(false);
 	    z->purge();
-	    goto done_label;
+	    delete z;
+	    z = nullptr;
+	    break;
 	  }
-	else if(argv[i] && strcmp(argv[i], "-t") == 0)
+
+      for(int i = 1; i < argc; i++)
+	if(argv[i] && strcmp(argv[i], "-t") == 0)
 	  {
 	    i += 1;
-	    z = new zepeto(true);
 
 	    if(i < argc && argv[i])
-	      z->set_product_file(argv[i]);
-	    else
 	      {
-		rc = EXIT_FAILURE;
-		goto done_label;
+		z = new zepeto(true);
+		z->set_product_file(argv[i]);
+		break;
 	      }
+	    else
+	      rc = EXIT_FAILURE;
+	  }
 
-	    break;
+      for(int i = 1; i < argc; i++)
+      	if(argv[i] && strcmp(argv[i], "-i") == 0)
+	  {
+	    z->print_about();
+	    goto done_label;
+	  }
+	else if(argv[i] && strcmp(argv[i], "-l") == 0)
+	  {
+	    z->print_products();
+	    goto done_label;
 	  }
 
       if(!z)
@@ -81,10 +94,7 @@ int main(int argc, char *argv[])
 	    if(i < argc && argv[i])
 	      z->add_attach_product(argv[i]);
 	    else
-	      {
-		rc = EXIT_FAILURE;
-		goto done_label;
-	      }
+	      rc = EXIT_FAILURE;
 	  }
 	else if(argv[i] && strcmp(argv[i], "-d") == 0)
 	  {
@@ -93,28 +103,30 @@ int main(int argc, char *argv[])
 	    if(i < argc && argv[i])
 	      z->add_detach_product(argv[i]);
 	    else
-	      {
-		rc = EXIT_FAILURE;
-		goto done_label;
-	      }
+	      rc = EXIT_FAILURE;
 	  }
 	else if(argv[i] && strcmp(argv[i], "-i") == 0)
 	  {
-	    z->print_about();
-	    goto done_label;
 	  }
 	else if(argv[i] && strcmp(argv[i], "-l") == 0)
 	  {
-	    z->print_products();
-	    goto done_label;
+	  }
+	else if(argv[i] && strcmp(argv[i], "-p") == 0)
+	  {
+	  }
+	else if(argv[i] && strcmp(argv[i], "-s") == 0)
+	  {
+	    i += 1;
+
+	    if(i < argc && argv[i])
+	      z->add_print_product(argv[i]);
+	    else
+	      rc = EXIT_FAILURE;
 	  }
 	else if(argv[i] && strcmp(argv[i], "-t") == 0)
 	  i += 1;
 	else
-	  {
-	    rc = EXIT_FAILURE;
-	    goto done_label;
-	  }
+	  rc = EXIT_FAILURE;
 
       z->final();
     }
