@@ -71,6 +71,9 @@ int main(int argc, char *argv[])
 	      rc = EXIT_FAILURE;
 	  }
 
+      if(!z)
+	z = new zepeto(true);
+
       for(int i = 1; i < argc; i++)
       	if(argv[i] && strcmp(argv[i], "-i") == 0)
 	  {
@@ -82,9 +85,6 @@ int main(int argc, char *argv[])
 	    z->print_products();
 	    goto done_label;
 	  }
-
-      if(!z)
-	z = new zepeto(true);
 
       for(int i = 1; i < argc; i++)
 	if(argv[i] && strcmp(argv[i], "-a") == 0)
