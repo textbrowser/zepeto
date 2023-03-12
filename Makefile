@@ -13,7 +13,7 @@ CXX_OPTIONS = -Wall \
 	      -fPIE \
 	      -fstack-protector-all \
 	      -pedantic \
-	      -std=c++11
+	      -std=c++17
 
 SOURCE	= zepeto.cc \
 	  zepeto_main.cc
