@@ -1,4 +1,5 @@
-CXX_OPTIONS = -Wall \
+CXX_OPTIONS = -D_FORTIFY_SOURCE=2 \
+	      -Wall \
 	      -Wconversion \
 	      -Wdouble-promotion \
 	      -Werror \
