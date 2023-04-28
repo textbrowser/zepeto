@@ -405,14 +405,14 @@ void zepeto::final(void)
 	      {
 		if(printed_products.count(line) > 0)
 		  {
-		    m_output.append("# ");
+		    m_output.append("echo '");
 		    m_output.append(line);
-		    m_output.append("\n");
+		    m_output.append("'\n");
 		  }
 
-		m_output.append("# ");
+		m_output.append("echo '");
 		m_output.append(path);
-		m_output.append("\n");
+		m_output.append("'\n");
 		printed_products.erase(line);
 	      }
 	  }
