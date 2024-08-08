@@ -51,7 +51,7 @@ zepeto::zepeto(const bool create_temporary_file):
   m_buffer = new char[s_maximum_buffer_length];
   m_fd = -1;
 
-  auto pwd_length = sysconf(_SC_GETPW_R_SIZE_MAX);
+  auto const pwd_length = sysconf(_SC_GETPW_R_SIZE_MAX);
   size_t buffer_size = 0;
   struct passwd pwd = {};
   struct passwd *result;
@@ -82,7 +82,7 @@ zepeto::zepeto(const bool create_temporary_file):
 	     << getpid()
 	     << "XXXXXX";
 
-      auto length = stream.str().length() + 1;
+      auto const length = stream.str().length() + 1;
 
       m_tempfilename = new char[length];
       memset(m_tempfilename, 0, length);
@@ -178,7 +178,7 @@ void zepeto::action(const int a, const std::string &string)
 	e = m_variables[variable];
       else
 	{
-	  const auto temp = std::getenv(variable.c_str());
+	  auto const temp = std::getenv(variable.c_str());
 
 	  if(temp)
 	    e = temp;
@@ -374,7 +374,7 @@ void zepeto::final(void)
 	    else if(line.find("description") != std::string::npos)
 	      continue;
 
-	    auto index = line.find(".");
+	    auto const index = line.find(".");
 
 	    if(index == std::string::npos)
 	      continue;
@@ -456,8 +456,8 @@ void zepeto::final(void)
 
 	  for(it = m_variables.begin(); it != m_variables.end(); ++it)
 	    {
-	      auto k(it->first);
-	      auto v(it->second);
+	      auto const k(it->first);
+	      auto const v(it->second);
 
 	      if(v.empty())
 		{
@@ -588,7 +588,7 @@ void zepeto::print_products(void)
 	  if(line.find("#") == 0)
 	    continue;
 
-	  auto index = line.find(".");
+	  auto const index = line.find(".");
 
 	  if(index == std::string::npos)
 	    continue;
