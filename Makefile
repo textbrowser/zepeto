@@ -5,6 +5,7 @@ CXX_OPTIONS = -D_FORTIFY_SOURCE=2 \
 	      -Werror \
 	      -Wextra \
 	      -Wformat=2 \
+	      -Wold-style-cast \
 	      -Wpointer-arith \
 	      -Wshadow \
 	      -Wsign-conversion \
