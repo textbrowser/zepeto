@@ -41,13 +41,14 @@ extern "C"
 
 #include "zepeto.h"
 
-static size_t s_maximum_buffer_length = 1024;
-static ssize_t s_maximum_buffer_length_ss = static_cast<ssize_t>
-  (s_maximum_buffer_length);
+static size_t s_maximum_buffer_length = 4096;
+static std::streamsize s_maximum_buffer_length_ss =
+  static_cast<std::streamsize> (s_maximum_buffer_length);
 
 zepeto::zepeto(const bool create_temporary_file):
   m_product_file("/usr/local/share/zepeto.table")
 {
+  m_buffer = m_pwd_buffer = m_tempfilename = nullptr;
   m_buffer = new char[s_maximum_buffer_length];
   m_fd = -1;
 

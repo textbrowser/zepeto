@@ -1,3 +1,4 @@
+# A line may contain at most 4095 visible characters.
 # Order is not required.
 
 qt5_12_x.description:Qt 5.12.x (qt5_12_x)
