@@ -68,6 +68,10 @@ int main(int argc, char *argv[])
 		break;
 	      }
 	    else
+	      /*
+	      ** Assume the default zepeto.table file.
+	      */
+
 	      rc = EXIT_FAILURE;
 	  }
 
@@ -152,12 +156,11 @@ int main(int argc, char *argv[])
 
   try
     {
-      if(z)
-	if(z->has_error())
-	  {
-	    rc = EXIT_FAILURE;
-	    z->print_error();
-	  }
+      if(z && z->has_error())
+	{
+	  rc = EXIT_FAILURE;
+	  z->print_error();
+	}
     }
   catch(const std::runtime_error &exception)
     {
@@ -171,9 +174,8 @@ int main(int argc, char *argv[])
       remove_temporary_file = true;
     }
 
-  if(remove_temporary_file)
-    if(z)
-      z->remove_temporary_file();
+  if(remove_temporary_file && z)
+    z->remove_temporary_file();
 
   delete z;
   return rc;
